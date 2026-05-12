@@ -1,0 +1,15 @@
+.spinnerWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  border: 3px solid var(--color-surface-container);
+  border-top-color: var(--color-primary);
+  animation: spin 0.7s linear infinite;
+}

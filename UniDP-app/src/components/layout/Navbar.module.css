@@ -1,0 +1,75 @@
+.navbar {
+  height: 56px;
+  background: var(--color-surface-lowest);
+  border-bottom: 1px solid rgba(232, 188, 182, 0.3);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 24px;
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brandIcon {
+  font-size: 24px !important;
+  color: var(--color-primary);
+}
+
+.brandName {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.userEmail {
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 14px;
+  color: var(--color-on-surface-variant);
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  transition: color 0.15s;
+  font-family: var(--font-family);
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.logoutBtn:hover {
+  color: var(--color-primary);
+}
+
+.logoutIcon {
+  font-size: 20px !important;
+}
