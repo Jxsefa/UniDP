@@ -74,22 +74,19 @@ export function AuthProvider({ children }) {
       throw new Error('La contraseña debe tener al menos 8 caracteres');
     }
 
-    const { data, error } = await supabase.auth.signUp({ email, password });
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { nombre }
+      }
+    });
 
     if (error) {
       if (error.message.includes('User already registered')) {
         throw new Error('Ya existe una cuenta con este correo');
       }
       throw new Error('Error al crear la cuenta. Intenta nuevamente');
-    }
-
-    if (data.user) {
-      await supabase.from('profiles').insert({
-        id: data.user.id,
-        nombre,
-        email,
-        role: 'student',
-      });
     }
   }
 
