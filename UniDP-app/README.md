@@ -12,7 +12,7 @@ Plataforma de eventos universitarios para la Universidad Diego Portales. Permite
 ### 1. Clonar el repositorio
 
 ```bash
-git clone <url-del-repo>
+git clone https://github.com/Jxsefa/UniDP.git 
 cd UniDP/UniDP-app
 ```
 
@@ -33,49 +33,8 @@ VITE_SUPABASE_ANON_KEY=tu_anon_key_de_supabase
 
 > Puedes encontrar estos valores en tu proyecto de Supabase en **Project Settings → API**.
 
-### 4. Configurar la base de datos
 
-Ejecuta el siguiente SQL en el **SQL Editor** de Supabase:
-
-```sql
--- Tabla de perfiles de usuario
-create table profiles (
-  id      uuid references auth.users(id) on delete cascade primary key,
-  nombre  text not null,
-  email   text not null,
-  role    text default 'student'
-);
-alter table profiles enable row level security;
-create policy "Users can read own profile"
-  on profiles for select using (auth.uid() = id);
-create policy "Users can insert own profile"
-  on profiles for insert with check (auth.uid() = id);
-
--- Tabla de eventos
-create table events (
-  id           uuid default gen_random_uuid() primary key,
-  titulo       text not null,
-  categoria    text not null check (categoria in ('Academia','Social','Deporte','Clubes')),
-  facultad     text,
-  descripcion  text not null,
-  ubicacion    text not null,
-  duracion     text not null,
-  fecha_inicio timestamptz not null,
-  autor_id     uuid references auth.users(id) on delete cascade,
-  autor_email  text not null,
-  creado_en    timestamptz default now(),
-  expires_at   timestamptz not null,
-  estado       text default 'activo' check (estado in ('activo','inactivo','oculto')),
-  es_publico   boolean default true
-);
-alter table events enable row level security;
-create policy "Authenticated users can insert events"
-  on events for insert with check (auth.uid() = autor_id);
-create policy "Authenticated users can read active events"
-  on events for select using (auth.role() = 'authenticated');
-```
-
-### 5. Iniciar el servidor de desarrollo
+### 4. Iniciar el servidor de desarrollo
 
 ```bash
 npm run dev
