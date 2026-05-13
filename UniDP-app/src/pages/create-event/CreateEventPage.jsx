@@ -11,23 +11,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { supabase } from '../../config/supabase';
+import { createEvent } from '../../services/events.service';
+import { CATEGORIES, DURATIONS } from '../../constants/categories';
 import styles from './CreateEventPage.module.css';
-
-// ─── Categorías disponibles ───────────────────────────────────────────────
-const CATEGORIAS = [
-  { id: 'Academia', label: 'Academia', icon: 'school' },
-  { id: 'Social',   label: 'Social',   icon: 'groups' },
-  { id: 'Deporte',  label: 'Deporte',  icon: 'sports_basketball' },
-  { id: 'Clubes',   label: 'Clubes',   icon: 'theater_comedy' },
-];
-
-// ─── Duraciones disponibles ───────────────────────────────────────────────
-const DURACIONES = [
-  { id: '1', label: '1 hora' },
-  { id: '2', label: '2 horas' },
-  { id: '4', label: '4 horas' },
-];
 
 export default function CreateEventPage() {
   const navigate  = useNavigate();
@@ -60,23 +46,13 @@ export default function CreateEventPage() {
 
     setLoading(true);
     try {
-      const horas      = parseInt(duracion);
-      const expiresAt  = new Date(Date.now() + horas * 3600 * 1000).toISOString();
-
-      const { error: dbError } = await supabase.from('events').insert({
-        titulo:      titulo.trim(),
-        categoria,
-        descripcion: descripcion.trim(),
-        ubicacion:   ubicacion.trim(),
-        duracion:    `${horas} hora${horas > 1 ? 's' : ''}`,
-        autor_id:    user.id,
-        autor_email: user.email,
-        creado_en:   new Date().toISOString(),
-        expires_at:  expiresAt,
-        estado:      'activo',
+      await createEvent({
+        titulo, categoria, descripcion, ubicacion, duracion,
+        fechaInicio: new Date().toISOString(),
+        esPublico,
+        autorId:    user.id,
+        autorEmail: user.email,
       });
-
-      if (dbError) throw new Error(dbError.message);
 
       // Éxito
       setSuccess(true);
@@ -167,7 +143,7 @@ export default function CreateEventPage() {
               <section className={styles.section}>
                 <label className={styles.sectionLabel}>Categoría</label>
                 <div className={styles.categoryGrid}>
-                  {CATEGORIAS.map(cat => (
+                  {CATEGORIES.map(cat => (
                       <button
                           key={cat.id}
                           type="button"
@@ -253,7 +229,7 @@ export default function CreateEventPage() {
               <section className={styles.section}>
                 <label className={styles.sectionLabel}>Duración del Evento</label>
                 <div className={styles.durationRow}>
-                  {DURACIONES.map(dur => (
+                  {DURATIONS.map(dur => (
                       <button
                           key={dur.id}
                           type="button"

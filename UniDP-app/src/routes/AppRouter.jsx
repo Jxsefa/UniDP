@@ -12,23 +12,15 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { lazy, Suspense } from 'react';
 import PublicRoute from './PublicRoute';
 import ProtectedRoute from './ProtectedRoute';
-import styles from './Route.module.css';
+import Spinner from '../components/ui/Spinner';
 
-const Login = lazy(() => import('../page/login/Login'));
-const RegisterPage = lazy(() => import('../page/register/RegisterPage'));
-const CreateEventPage = lazy(() => import('../page/crear-evento/CreateEventPage'));
-
-function PageSpinner() {
-  return (
-    <div className={styles.spinnerWrapper}>
-      <div className={styles.spinner} />
-    </div>
-  );
-}
+const LoginPage = lazy(() => import('../pages/login/LoginPage'));
+const RegisterPage = lazy(() => import('../pages/register/RegisterPage'));
+const CreateEventPage = lazy(() => import('../pages/create-event/CreateEventPage'));
 
 export default function AppRouter() {
   return (
-    <Suspense fallback={<PageSpinner />}>
+    <Suspense fallback={<Spinner />}>
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
 
@@ -36,7 +28,7 @@ export default function AppRouter() {
           path="/login"
           element={
             <PublicRoute>
-              <Login />
+              <LoginPage />
             </PublicRoute>
           }
         />

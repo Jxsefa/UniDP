@@ -11,21 +11,12 @@
 import { Navigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import Navbar from '../components/layout/Navbar';
-import styles from './Route.module.css';
+import Spinner from '../components/ui/Spinner';
 
-/**
- * @param {{ children: React.ReactNode }} props
- */
 export default function ProtectedRoute({ children }) {
   const { user, loading } = useAuth();
 
-  if (loading) {
-    return (
-      <div className={styles.spinnerWrapper}>
-        <div className={styles.spinner} />
-      </div>
-    );
-  }
+  if (loading) return <Spinner />;
 
   if (!user) {
     return <Navigate to="/login" replace />;
