@@ -11,10 +11,12 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
   loginWithEmail,
+  loginWithGoogle as authLoginWithGoogle,
   registerWithEmail,
   logout as authLogout,
   getSession,
   onAuthStateChange,
+  isUdpEmail,
 } from '../services/auth.service';
 
 const AuthContext = createContext(null);
@@ -25,6 +27,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [authError, setAuthError] = useState(null);
 
   useEffect(() => {
     getSession().then((session) => {
@@ -33,7 +36,18 @@ export function AuthProvider({ children }) {
     });
 
     const subscription = onAuthStateChange((session) => {
-      setUser(session?.user ?? null);
+      if (session?.user) {
+        if (!isUdpEmail(session.user.email ?? '')) {
+          authLogout();
+          setUser(null);
+          setAuthError('Solo se permiten cuentas institucionales UDP (@udp.cl o @mail.udp.cl)');
+        } else {
+          setUser(session.user);
+          setAuthError(null);
+        }
+      } else {
+        setUser(null);
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -41,6 +55,10 @@ export function AuthProvider({ children }) {
 
   async function login(email, password) {
     await loginWithEmail(email, password);
+  }
+
+  async function loginWithGoogle() {
+    await authLoginWithGoogle();
   }
 
   async function register(email, password, nombre) {
@@ -52,7 +70,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, authError, login, loginWithGoogle, register, logout }}>
       {children}
     </AuthContext.Provider>
   );

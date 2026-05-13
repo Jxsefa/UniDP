@@ -254,6 +254,65 @@
   font-size: 20px !important;
 }
 
+/* ── Divider ── */
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dividerLine {
+  flex: 1;
+  height: 1px;
+  background: rgba(147, 110, 105, 0.2);
+}
+
+.dividerText {
+  font-size: 13px;
+  color: var(--color-outline);
+  font-weight: 500;
+}
+
+/* ── Google button ── */
+.googleBtn {
+  width: 100%;
+  padding: 11px 24px;
+  background: #ffffff;
+  color: #3c4043;
+  border: 1px solid rgba(147, 110, 105, 0.3);
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  cursor: pointer;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  transition: box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.googleBtn:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: scale(1.01);
+}
+
+.googleBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.googleBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.googleIcon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
 /* ── Footer ── */
 .footer {
   margin-top: 24px;

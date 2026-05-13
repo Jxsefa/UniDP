@@ -2,7 +2,7 @@ import { supabase } from '../config/supabase';
 
 const UDP_DOMAINS = ['@udp.cl', '@mail.udp.cl'];
 
-function isUdpEmail(email) {
+export function isUdpEmail(email) {
   return UDP_DOMAINS.some((domain) => email.toLowerCase().endsWith(domain));
 }
 
@@ -30,6 +30,17 @@ export async function registerWithEmail(email, password, nombre) {
     if (error.message.includes('User already registered')) throw new Error('Ya existe una cuenta con este correo');
     throw new Error('Error al crear la cuenta. Intenta nuevamente');
   }
+}
+
+export async function loginWithGoogle() {
+  const { error } = await supabase.auth.signInWithOAuth({
+    provider: 'google',
+    options: {
+      redirectTo: `${window.location.origin}/login`,
+      queryParams: { hd: 'mail.udp.cl' },
+    },
+  });
+  if (error) throw new Error('Error al iniciar sesión con Google');
 }
 
 export async function logout() {
