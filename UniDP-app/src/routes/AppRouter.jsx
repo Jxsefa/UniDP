@@ -15,7 +15,6 @@ import ProtectedRoute from './ProtectedRoute';
 import Spinner from '../components/ui/Spinner';
 
 const LoginPage = lazy(() => import('../pages/login/LoginPage'));
-const RegisterPage = lazy(() => import('../pages/register/RegisterPage'));
 const CreateEventPage = lazy(() => import('../pages/create-event/CreateEventPage'));
 
 export default function AppRouter() {
@@ -29,15 +28,6 @@ export default function AppRouter() {
           element={
             <PublicRoute>
               <LoginPage />
-            </PublicRoute>
-          }
-        />
-
-        <Route
-          path="/register"
-          element={
-            <PublicRoute>
-              <RegisterPage />
             </PublicRoute>
           }
         />

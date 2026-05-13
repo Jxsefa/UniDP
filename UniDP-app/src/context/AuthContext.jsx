@@ -10,9 +10,7 @@
 
 import { createContext, useContext, useEffect, useState } from 'react';
 import {
-  loginWithEmail,
   loginWithGoogle as authLoginWithGoogle,
-  registerWithEmail,
   logout as authLogout,
   getSession,
   onAuthStateChange,
@@ -53,16 +51,8 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe();
   }, []);
 
-  async function login(email, password) {
-    await loginWithEmail(email, password);
-  }
-
   async function loginWithGoogle() {
     await authLoginWithGoogle();
-  }
-
-  async function register(email, password, nombre) {
-    await registerWithEmail(email, password, nombre);
   }
 
   async function logout() {
@@ -70,7 +60,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, authError, login, loginWithGoogle, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, authError, loginWithGoogle, logout }}>
       {children}
     </AuthContext.Provider>
   );
