@@ -1,4 +1,4 @@
-.spinnerWrapper {
+.wrapper {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -12,4 +12,8 @@
   border: 3px solid var(--color-surface-container);
   border-top-color: var(--color-primary);
   animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }
