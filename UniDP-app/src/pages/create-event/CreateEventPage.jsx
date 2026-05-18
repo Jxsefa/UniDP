@@ -8,16 +8,18 @@
  * <Route path="/crear-evento" element={<ProtectedRoute><CreateEventPage /></ProtectedRoute>} />
  */
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
-import { createEvent } from '../../services/events.service';
+import { createEvent, uploadEventImage } from '../../services/events.service';
 import { CATEGORIES, DURATIONS } from '../../constants/categories';
 import styles from './CreateEventPage.module.css';
 
 export default function CreateEventPage() {
   const navigate  = useNavigate();
   const { user }  = useAuth();
+
+  const fileInputRef = useRef(null);
 
   // Estado del formulario
   const [titulo,      setTitulo]      = useState('');
@@ -26,11 +28,25 @@ export default function CreateEventPage() {
   const [ubicacion,   setUbicacion]   = useState('');
   const [duracion,    setDuracion]    = useState('');
   const [esPublico,   setEsPublico]   = useState(true);
+  const [imagenFile,  setImagenFile]  = useState(null);
+  const [imagenPreview, setImagenPreview] = useState(null);
+  const [isDragging,  setIsDragging]  = useState(false);
 
   // Estado UI
   const [loading, setLoading] = useState(false);
   const [error,   setError]   = useState(null);
-  const [success, setSuccess] = useState(false);
+
+  function handleFile(file) {
+    if (!file || !file.type.startsWith('image/')) return;
+    setImagenFile(file);
+    setImagenPreview(URL.createObjectURL(file));
+  }
+
+  function handleDrop(e) {
+    e.preventDefault();
+    setIsDragging(false);
+    handleFile(e.dataTransfer.files[0]);
+  }
 
   // ── Submit ────────────────────────────────────────────────────────────
   async function handleSubmit(e) {
@@ -46,22 +62,18 @@ export default function CreateEventPage() {
 
     setLoading(true);
     try {
+      let imagenUrl = null;
+      if (imagenFile) imagenUrl = await uploadEventImage(imagenFile);
+
       await createEvent({
         titulo, categoria, descripcion, ubicacion, duracion,
         fechaInicio: new Date().toISOString(),
         esPublico,
-        autorId:    user.id,
-        autorEmail: user.email,
+        autorId: user.id,
+        imagenUrl,
       });
 
-      // Éxito
-      setSuccess(true);
-      setTitulo('');
-      setCategoria('');
-      setDescripcion('');
-      setUbicacion('');
-      setDuracion('');
-      setTimeout(() => setSuccess(false), 4000);
+      navigate('/dashboard');
     } catch (err) {
       setError('Error al publicar el evento. Intenta nuevamente.');
     } finally {
@@ -109,15 +121,43 @@ export default function CreateEventPage() {
             {/* Banner */}
             <section className={styles.bannerSection}>
               <label className={styles.sectionLabel}>Banner del Evento</label>
-              <div className={styles.bannerUpload}>
-                <div className={styles.bannerOverlay}>
-                <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>
-                  add_a_photo
-                </span>
-                  <p className={styles.bannerText}>Toca para subir imagen</p>
-                  <p className={styles.bannerHint}>Próximamente disponible</p>
-                </div>
+              <div
+                className={`${styles.bannerUpload} ${isDragging ? styles.bannerDragging : ''}`}
+                onClick={() => fileInputRef.current.click()}
+                onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+              >
+                {imagenPreview ? (
+                  <>
+                    <img src={imagenPreview} alt="preview" className={styles.bannerPreview} />
+                    <button
+                      type="button"
+                      className={styles.bannerRemove}
+                      onClick={e => { e.stopPropagation(); setImagenFile(null); setImagenPreview(null); }}
+                    >
+                      <span className="material-symbols-outlined">close</span>
+                    </button>
+                  </>
+                ) : (
+                  <div className={styles.bannerOverlay}>
+                    <span className="material-symbols-outlined" style={{ fontSize: '40px' }}>
+                      {isDragging ? 'file_download' : 'add_a_photo'}
+                    </span>
+                    <p className={styles.bannerText}>
+                      {isDragging ? 'Suelta la imagen aquí' : 'Arrastra una imagen o toca para subir'}
+                    </p>
+                    <p className={styles.bannerHint}>PNG, JPG o WEBP — máx. 5MB</p>
+                  </div>
+                )}
               </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                style={{ display: 'none' }}
+                onChange={e => handleFile(e.target.files[0])}
+              />
             </section>
 
             <form onSubmit={handleSubmit} noValidate>
@@ -291,13 +331,6 @@ export default function CreateEventPage() {
                   </div>
               )}
 
-              {/* Éxito */}
-              {success && (
-                  <div className={styles.successBox}>
-                    <span className="material-symbols-outlined">check_circle</span>
-                    ¡Evento publicado exitosamente!
-                  </div>
-              )}
 
             </form>
           </div>

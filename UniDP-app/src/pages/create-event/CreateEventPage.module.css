@@ -155,6 +155,38 @@
   margin: 0;
 }
 
+.bannerDragging {
+  border-color: var(--color-primary) !important;
+  background: rgba(183, 0, 6, 0.05) !important;
+}
+
+.bannerPreview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: var(--radius-xl);
+}
+
+.bannerRemove {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(0, 0, 0, 0.5);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.bannerRemove .material-symbols-outlined {
+  font-size: 18px;
+}
+
 /* ── Secciones del form ──────────────────────────────────────────────────── */
 .section {
   display: flex;

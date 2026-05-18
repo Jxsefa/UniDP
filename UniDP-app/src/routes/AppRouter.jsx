@@ -15,6 +15,7 @@ import ProtectedRoute from './ProtectedRoute';
 import Spinner from '../components/ui/Spinner';
 
 const LoginPage = lazy(() => import('../pages/login/LoginPage'));
+const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage'));
 const CreateEventPage = lazy(() => import('../pages/create-event/CreateEventPage'));
 
 export default function AppRouter() {
@@ -36,27 +37,7 @@ export default function AppRouter() {
           path="/dashboard"
           element={
             <ProtectedRoute>
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--color-on-surface-variant)' }}>
-                  <div style={{ padding: '24px', textAlign: 'center' }}>
-                      <h1 style={{ color: '#291714' }}>Dashboard — próximamente</h1>
-                      <button
-                          onClick={() => window.location.href = '/crear-evento'}
-                          style={{
-                              marginTop: '24px',
-                              background: '#b70006',
-                              color: 'white',
-                              border: 'none',
-                              borderRadius: '8px',
-                              padding: '12px 24px',
-                              fontSize: '16px',
-                              fontWeight: '700',
-                              cursor: 'pointer',
-                          }}
-                      >
-                          + Crear Evento
-                      </button>
-                  </div>
-              </div>
+              <DashboardPage />
             </ProtectedRoute>
           }
         />

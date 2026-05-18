@@ -1,23 +1,32 @@
 import { supabase } from '../config/supabase';
 
-export async function createEvent({ titulo, categoria, facultad, descripcion, ubicacion, fechaInicio, duracion, esPublico, autorId, autorEmail }) {
-  const horas = parseInt(duracion);
-  const expiresAt = new Date(new Date(fechaInicio).getTime() + horas * 3600 * 1000).toISOString();
+export async function uploadEventImage(file) {
+  const ext = file.name.split('.').pop();
+  const path = `${Date.now()}.${ext}`;
+  const { error } = await supabase.storage.from('eventos').upload(path, file, { contentType: file.type });
+  if (error) throw new Error(error.message);
+  const { data } = supabase.storage.from('eventos').getPublicUrl(path);
+  return data.publicUrl;
+}
 
-  const { data, error } = await supabase.from('events').insert({
-    titulo:       titulo.trim(),
-    categoria,
-    facultad,
-    descripcion:  descripcion.trim(),
-    ubicacion:    ubicacion.trim(),
-    duracion:     `${horas} hora${horas > 1 ? 's' : ''}`,
-    fecha_inicio: new Date(fechaInicio).toISOString(),
-    autor_id:     autorId,
-    autor_email:  autorEmail,
-    creado_en:    new Date().toISOString(),
-    expires_at:   expiresAt,
-    estado:       'activo',
-    es_publico:   esPublico,
+export async function createEvent({ titulo, categoria, descripcion, ubicacion, fechaInicio, duracion, esPublico, autorId, imagenUrl }) {
+  const horas    = parseInt(duracion);
+  const fechaFin = new Date(new Date(fechaInicio).getTime() + horas * 3600 * 1000).toISOString();
+
+  const { data, error } = await supabase.from('evento').insert({
+    titulo:      titulo.trim(),
+    categoria:   categoria,
+    descripcion: descripcion.trim(),
+    ubicacion:   ubicacion.trim(),
+    duracion:    `${horas} hora${horas > 1 ? 's' : ''}`,
+    autor_id:    autorId,
+    creado_en:   new Date().toISOString(),
+    fecha_in:    new Date(fechaInicio).toISOString(),
+    expires_at:  fechaFin,
+    fecha_fin:   fechaFin,
+    estado:      'activo',
+    es_oficial:  esPublico,
+    imagen_url:  imagenUrl ?? null,
   }).select().single();
 
   if (error) throw new Error(error.message);
@@ -26,10 +35,10 @@ export async function createEvent({ titulo, categoria, facultad, descripcion, ub
 
 export async function getActiveEvents({ facultad, categoria } = {}) {
   let query = supabase
-    .from('events')
+    .from('evento')
     .select('*')
     .eq('estado', 'activo')
-    .order('fecha_inicio', { ascending: true });
+    .order('creado_en', { ascending: false });
 
   if (facultad) query = query.eq('facultad', facultad);
   if (categoria) query = query.eq('categoria', categoria);
@@ -41,7 +50,7 @@ export async function getActiveEvents({ facultad, categoria } = {}) {
 
 export async function getEventById(id) {
   const { data, error } = await supabase
-    .from('events')
+    .from('evento')
     .select('*')
     .eq('id', id)
     .single();
