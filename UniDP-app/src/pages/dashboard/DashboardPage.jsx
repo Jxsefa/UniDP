@@ -1,11 +1,30 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import {
+  Home, Calendar, GraduationCap, Users, Trophy,
+  Search, X, MapPin, Plus,
+} from 'lucide-react';
 import { getActiveEvents, searchEvents } from '../../services/events.service';
 import { CATEGORIES } from '../../constants/categories';
 import styles from './DashboardPage.module.css';
 
-const ALL_TAB = { id: null, label: 'Todos', icon: 'apps' };
+const ALL_TAB = { id: null, label: 'Todos' };
 const TABS = [ALL_TAB, ...CATEGORIES];
+
+const NAV_ITEMS = [
+  { id: null,       label: 'Home',       Icon: Home },
+  { id: '_cal',     label: 'Calendario', Icon: Calendar },
+  { id: 'Academia', label: 'Académico',  Icon: GraduationCap },
+  { id: 'Social',   label: 'Social',     Icon: Users },
+  { id: 'Deporte',  label: 'Deportes',   Icon: Trophy },
+];
+
+const BOTTOM_NAV = [
+  { id: null,       label: 'Home',    Icon: Home },
+  { id: '_cal',     label: 'Eventos', Icon: Calendar },
+  { id: 'Social',   label: 'Social',  Icon: Users },
+  { id: 'Academia', label: 'Campus',  Icon: GraduationCap },
+];
 
 function formatDate(iso) {
   if (!iso) return null;
@@ -14,14 +33,25 @@ function formatDate(iso) {
   });
 }
 
+function PlaceholderAvatars() {
+  const colors = ['#b70006', '#5e3f3a', '#936e69'];
+  return (
+    <div className={styles.avatarStack}>
+      {colors.map((bg, i) => (
+        <div key={i} className={styles.miniAvatar} style={{ background: bg }} />
+      ))}
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState(null);
-  const [query, setQuery]               = useState('');
+  const [query, setQuery]                   = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
-  const [events, setEvents]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError]     = useState(null);
+  const [events, setEvents]                 = useState([]);
+  const [loading, setLoading]               = useState(true);
+  const [error, setError]                   = useState(null);
   const debounceRef = useRef(null);
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
@@ -51,112 +81,199 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, [activeCategory, debouncedQuery]);
 
+  function handleNavClick(itemId) {
+    if (itemId === '_cal') return;
+    setActiveCategory(itemId);
+  }
+
+  function isNavActive(itemId) {
+    if (itemId === '_cal') return false;
+    return activeCategory === itemId;
+  }
+
   return (
-    <div className={styles.page}>
-      <div className={styles.container}>
+    <div className={styles.layout}>
 
-        <div className={styles.topBar}>
-          <h1 className={styles.title}>Eventos</h1>
-          <button className={styles.createBtn} onClick={() => navigate('/crear-evento')}>
-            <span className="material-symbols-outlined">add</span>
-            Crear evento
-          </button>
+      {/* ── Sidebar — desktop only ── */}
+      <aside className={styles.sidebar}>
+        <div className={styles.sidebarHeader}>
+          <span className={styles.sidebarLogo}>UniDP Hub</span>
+          <span className={styles.sidebarSub}>Universidad Diego Portales</span>
         </div>
 
-        <div className={styles.searchBar}>
-          <span className="material-symbols-outlined">search</span>
-          <input
-            type="text"
-            className={styles.searchInput}
-            placeholder="Buscar eventos..."
-            value={query}
-            onChange={handleSearchChange}
-          />
-          {query && (
-            <button className={styles.clearBtn} onClick={handleClear}>
-              <span className="material-symbols-outlined">close</span>
-            </button>
-          )}
-        </div>
-
-        <div className={styles.tabs}>
-          {TABS.map(tab => (
+        <nav className={styles.sidebarNav}>
+          {NAV_ITEMS.map(({ id, label, Icon }) => (
             <button
-              key={tab.id ?? 'all'}
-              className={`${styles.tab} ${activeCategory === tab.id ? styles.tabActive : ''}`}
-              onClick={() => setActiveCategory(tab.id)}
+              key={id ?? 'home'}
+              className={`${styles.navItem} ${isNavActive(id) ? styles.navItemActive : ''}`}
+              onClick={() => handleNavClick(id)}
+              type="button"
             >
-              <span className="material-symbols-outlined">{tab.icon}</span>
-              {tab.label}
+              <Icon size={20} />
+              <span>{label}</span>
             </button>
           ))}
+        </nav>
+
+        <div className={styles.sidebarFooter}>
+          <button
+            className={styles.createBtnFull}
+            onClick={() => navigate('/crear-evento')}
+            type="button"
+          >
+            <Plus size={18} />
+            Crear Evento
+          </button>
         </div>
+      </aside>
 
-        {loading && (
-          <div className={styles.center}>
-            <span className="material-symbols-outlined">hourglass_empty</span>
-            <p>Cargando eventos...</p>
-          </div>
-        )}
+      {/* ── Main content ── */}
+      <main className={styles.main}>
+        <div className={styles.content}>
 
-        {error && (
-          <div className={styles.center}>
-            <span className="material-symbols-outlined">error</span>
-            <p>{error}</p>
-          </div>
-        )}
-
-        {!loading && !error && events.length === 0 && (
-          <div className={styles.empty}>
-            <span className="material-symbols-outlined">
-              {debouncedQuery.trim() ? 'search_off' : 'event_busy'}
-            </span>
-            {debouncedQuery.trim() ? (
-              <p>No se encontraron eventos.</p>
-            ) : (
-              <>
-                <p>No hay eventos activos por ahora.</p>
-                <button className={styles.createBtn} onClick={() => navigate('/crear-evento')}>
-                  Publicar el primero
-                </button>
-              </>
+          {/* Search */}
+          <div className={styles.searchBar}>
+            <Search size={18} className={styles.searchIcon} />
+            <input
+              type="text"
+              className={styles.searchInput}
+              placeholder="Buscar eventos..."
+              value={query}
+              onChange={handleSearchChange}
+            />
+            {query && (
+              <button className={styles.clearBtn} onClick={handleClear} type="button">
+                <X size={16} />
+              </button>
             )}
           </div>
-        )}
 
-        {!loading && !error && events.length > 0 && (
-          <div className={styles.grid}>
-            {events.map(event => (
-              <div key={event.id} className={styles.card}>
-                {event.imagen_url && (
-                  <img src={event.imagen_url} alt={event.titulo} className={styles.cardImage} />
-                )}
-                <div className={styles.cardBody}>
-                  <div className={styles.cardHeader}>
-                    <span className={styles.category}>{event.categoria}</span>
-                    <span className={styles.duration}>{event.duracion}</span>
-                  </div>
-                  <h2 className={styles.cardTitle}>{event.titulo}</h2>
-                  <p className={styles.cardDesc}>{event.descripcion}</p>
-                  <div className={styles.cardFooter}>
-                    {event.fecha_in && (
-                      <div className={styles.footerRow}>
-                        <span className="material-symbols-outlined">calendar_today</span>
-                        <span>{formatDate(event.fecha_in)}</span>
-                      </div>
+          {/* Category filter tabs */}
+          <div className={styles.tabs}>
+            {TABS.map(tab => (
+              <button
+                key={tab.id ?? 'all'}
+                className={`${styles.tab} ${activeCategory === tab.id ? styles.tabActive : ''}`}
+                onClick={() => setActiveCategory(tab.id)}
+                type="button"
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          {/* States */}
+          {loading && (
+            <div className={styles.center}>
+              <p>Cargando eventos...</p>
+            </div>
+          )}
+
+          {error && (
+            <div className={styles.center}>
+              <p>{error}</p>
+            </div>
+          )}
+
+          {!loading && !error && events.length === 0 && (
+            <div className={styles.empty}>
+              {debouncedQuery.trim() ? (
+                <p>No se encontraron eventos.</p>
+              ) : (
+                <>
+                  <p>No hay eventos activos por ahora.</p>
+                  <button
+                    className={styles.createBtn}
+                    onClick={() => navigate('/crear-evento')}
+                    type="button"
+                  >
+                    Publicar el primero
+                  </button>
+                </>
+              )}
+            </div>
+          )}
+
+          {/* Event cards */}
+          {!loading && !error && events.length > 0 && (
+            <div className={styles.grid}>
+              {events.map(event => (
+                <div key={event.id} className={styles.card}>
+                  <div className={styles.cardImageWrap}>
+                    {event.imagen_url ? (
+                      <img
+                        src={event.imagen_url}
+                        alt={event.titulo}
+                        className={styles.cardImage}
+                      />
+                    ) : (
+                      <div className={styles.cardImagePlaceholder} />
                     )}
-                    <div className={styles.footerRow}>
-                      <span className="material-symbols-outlined">location_on</span>
-                      <span>{event.ubicacion}</span>
+                    {event.categoria && (
+                      <span className={styles.cardBadge}>{event.categoria}</span>
+                    )}
+                  </div>
+
+                  <div className={styles.cardBody}>
+                    {event.categoria && (
+                      <span className={styles.category}>{event.categoria}</span>
+                    )}
+                    <h2 className={styles.cardTitle}>{event.titulo}</h2>
+
+                    <div className={styles.cardMeta}>
+                      {event.fecha_in && (
+                        <div className={styles.metaRow}>
+                          <Calendar size={14} />
+                          <span>{formatDate(event.fecha_in)}</span>
+                        </div>
+                      )}
+                      {event.ubicacion && (
+                        <div className={styles.metaRow}>
+                          <MapPin size={14} />
+                          <span>{event.ubicacion}</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className={styles.cardFooter}>
+                      <PlaceholderAvatars />
+                      <button className={styles.interestBtn} type="button">
+                        Me interesa
+                      </button>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
+      </main>
 
-      </div>
+      {/* ── Bottom navigation — mobile only ── */}
+      <nav className={styles.bottomNav}>
+        {BOTTOM_NAV.map(({ id, label, Icon }) => (
+          <button
+            key={id ?? 'home'}
+            className={`${styles.bottomNavItem} ${isNavActive(id) ? styles.bottomNavActive : ''}`}
+            onClick={() => handleNavClick(id)}
+            type="button"
+          >
+            <Icon size={22} />
+            <span>{label}</span>
+          </button>
+        ))}
+      </nav>
+
+      {/* ── FAB — mobile only ── */}
+      <button
+        className={styles.fab}
+        onClick={() => navigate('/crear-evento')}
+        aria-label="Crear evento"
+        type="button"
+      >
+        <Plus size={24} />
+      </button>
+
     </div>
   );
 }
