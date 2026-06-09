@@ -113,6 +113,24 @@ export async function toggleInteres(usuarioId, eventoId) {
   }
 }
 
+export async function checkInteres(usuarioId, eventoId) {
+  const { data } = await supabase
+    .from('intereses')
+    .select('id')
+    .eq('usuario_id', usuarioId)
+    .eq('evento_id', eventoId)
+    .maybeSingle();
+  return !!data;
+}
+
+export async function getInteresCount(eventoId) {
+  const { count } = await supabase
+    .from('intereses')
+    .select('*', { count: 'exact', head: true })
+    .eq('evento_id', eventoId);
+  return count ?? 0;
+}
+
 export async function getEventosMeInteresa(usuarioId) {
   const { data, error } = await supabase
     .from('intereses')

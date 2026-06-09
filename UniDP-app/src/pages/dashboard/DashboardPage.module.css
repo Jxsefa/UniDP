@@ -337,21 +337,46 @@
 
 /* ─── Buttons ───────────────────────────────────────────── */
 .interestBtn {
-  background: var(--color-primary);
-  color: #fff;
-  border: none;
+  background: transparent;
+  color: var(--color-primary);
+  border: 1.5px solid var(--color-primary);
   border-radius: var(--radius-full);
   padding: 0.4rem 1rem;
   font-size: 0.8rem;
   font-weight: 600;
   font-family: var(--font-family);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.15s, color 0.15s;
   white-space: nowrap;
 }
 
 .interestBtn:hover {
-  background: var(--color-primary-container);
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.interestBtnActive,
+.interestBtnActive:hover {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.interestBtn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* ─── Card footer extras ────────────────────────────────── */
+.footerLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.interestCount {
+  font-size: 0.78rem;
+  color: var(--color-on-surface-variant);
 }
 
 /* shared base for create buttons */

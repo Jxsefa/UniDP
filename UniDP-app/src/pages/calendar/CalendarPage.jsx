@@ -5,7 +5,7 @@ import {
   ChevronLeft, ChevronRight, Clock, MapPin, Plus,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
-import { getEventosMeInteresa } from '../../services/events.service';
+import { getEventosMeInteresa, toggleInteres } from '../../services/events.service';
 import Spinner from '../../components/ui/Spinner';
 import styles from './CalendarPage.module.css';
 
@@ -138,6 +138,24 @@ export default function CalendarPage() {
   const listTitle = selectedDay
     ? `Eventos del ${formatDayHeader(new Date(...selectedDay.split('-').map(Number)))}`
     : 'Mis eventos guardados';
+
+  async function handleRemove(evId) {
+    const prev = events;
+    const newEvents = events.filter(e => e.id !== evId);
+    setEvents(newEvents);
+    if (selectedDay) {
+      const stillHas = newEvents.some(e => {
+        const df = e.fecha_in || e.creado_en;
+        return df && toDateKey(new Date(df)) === selectedDay;
+      });
+      if (!stillHas) setSelectedDay(null);
+    }
+    try {
+      await toggleInteres(user.id, evId);
+    } catch {
+      setEvents(prev);
+    }
+  }
 
   function handleNavClick({ path, categoria }) {
     if (categoria) {
@@ -305,14 +323,23 @@ export default function CalendarPage() {
                           </div>
                         </div>
 
-                        {/* Thumbnail */}
-                        {ev.imagen_url && (
-                          <img
-                            src={ev.imagen_url}
-                            alt={ev.titulo}
-                            className={styles.thumb}
-                          />
-                        )}
+                        {/* Actions */}
+                        <div className={styles.cardActions}>
+                          {ev.imagen_url && (
+                            <img
+                              src={ev.imagen_url}
+                              alt={ev.titulo}
+                              className={styles.thumb}
+                            />
+                          )}
+                          <button
+                            className={styles.removeBtn}
+                            onClick={() => handleRemove(ev.id)}
+                            type="button"
+                          >
+                            Quitar
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

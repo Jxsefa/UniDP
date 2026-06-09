@@ -4,7 +4,11 @@ import {
   Home, Calendar, GraduationCap, Users, Users2, Trophy,
   Search, X, MapPin, Plus,
 } from 'lucide-react';
-import { getActiveEvents, searchEvents } from '../../services/events.service';
+import {
+  getActiveEvents, searchEvents,
+  toggleInteres, checkInteres, getInteresCount,
+} from '../../services/events.service';
+import { useAuth } from '../../hooks/useAuth';
 import { CATEGORIES } from '../../constants/categories';
 import styles from './DashboardPage.module.css';
 
@@ -47,9 +51,101 @@ function PlaceholderAvatars() {
   );
 }
 
+function EventCard({ event, userId }) {
+  const [liked, setLiked] = useState(false);
+  const [count, setCount] = useState(0);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    if (!userId) return;
+    Promise.all([
+      checkInteres(userId, event.id),
+      getInteresCount(event.id),
+    ]).then(([isLiked, cnt]) => {
+      setLiked(isLiked);
+      setCount(cnt);
+    }).catch(() => {});
+  }, [userId, event.id]);
+
+  async function handleToggle() {
+    if (!userId || busy) return;
+    setBusy(true);
+    const next = !liked;
+    setLiked(next);
+    setCount(c => c + (next ? 1 : -1));
+    try {
+      await toggleInteres(userId, event.id);
+    } catch {
+      setLiked(!next);
+      setCount(c => c + (next ? -1 : 1));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <div className={styles.card}>
+      <div className={styles.cardImageWrap}>
+        {event.imagen_url ? (
+          <img
+            src={event.imagen_url}
+            alt={event.titulo}
+            className={styles.cardImage}
+          />
+        ) : (
+          <div className={styles.cardImagePlaceholder} />
+        )}
+        {event.categoria && (
+          <span className={styles.cardBadge}>{event.categoria}</span>
+        )}
+      </div>
+
+      <div className={styles.cardBody}>
+        {event.categoria && (
+          <span className={styles.category}>{event.categoria}</span>
+        )}
+        <h2 className={styles.cardTitle}>{event.titulo}</h2>
+
+        <div className={styles.cardMeta}>
+          {event.fecha_in && (
+            <div className={styles.metaRow}>
+              <Calendar size={14} />
+              <span>{formatDate(event.fecha_in)}</span>
+            </div>
+          )}
+          {event.ubicacion && (
+            <div className={styles.metaRow}>
+              <MapPin size={14} />
+              <span>{event.ubicacion}</span>
+            </div>
+          )}
+        </div>
+
+        <div className={styles.cardFooter}>
+          <div className={styles.footerLeft}>
+            <PlaceholderAvatars />
+            {count > 0 && (
+              <span className={styles.interestCount}>{count}</span>
+            )}
+          </div>
+          <button
+            className={`${styles.interestBtn} ${liked ? styles.interestBtnActive : ''}`}
+            onClick={handleToggle}
+            disabled={busy}
+            type="button"
+          >
+            {liked ? 'Me interesa ♥' : 'Me interesa'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
-  const navigate  = useNavigate();
-  const location  = useLocation();
+  const { user }   = useAuth();
+  const navigate   = useNavigate();
+  const location   = useLocation();
   const [activeCategory, setActiveCategory] = useState(null);
   const [query, setQuery]                   = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -212,51 +308,7 @@ export default function DashboardPage() {
           {!loading && !error && events.length > 0 && (
             <div className={styles.grid}>
               {events.map(event => (
-                <div key={event.id} className={styles.card}>
-                  <div className={styles.cardImageWrap}>
-                    {event.imagen_url ? (
-                      <img
-                        src={event.imagen_url}
-                        alt={event.titulo}
-                        className={styles.cardImage}
-                      />
-                    ) : (
-                      <div className={styles.cardImagePlaceholder} />
-                    )}
-                    {event.categoria && (
-                      <span className={styles.cardBadge}>{event.categoria}</span>
-                    )}
-                  </div>
-
-                  <div className={styles.cardBody}>
-                    {event.categoria && (
-                      <span className={styles.category}>{event.categoria}</span>
-                    )}
-                    <h2 className={styles.cardTitle}>{event.titulo}</h2>
-
-                    <div className={styles.cardMeta}>
-                      {event.fecha_in && (
-                        <div className={styles.metaRow}>
-                          <Calendar size={14} />
-                          <span>{formatDate(event.fecha_in)}</span>
-                        </div>
-                      )}
-                      {event.ubicacion && (
-                        <div className={styles.metaRow}>
-                          <MapPin size={14} />
-                          <span>{event.ubicacion}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className={styles.cardFooter}>
-                      <PlaceholderAvatars />
-                      <button className={styles.interestBtn} type="button">
-                        Me interesa
-                      </button>
-                    </div>
-                  </div>
-                </div>
+                <EventCard key={event.id} event={event} userId={user?.id} />
               ))}
             </div>
           )}
