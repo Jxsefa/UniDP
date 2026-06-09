@@ -117,6 +117,11 @@ export async function toggleInteres(usuarioId, eventoId) {
   }
 }
 
+export async function updateEvent(id, datos) {
+  const { error } = await supabase.from('evento').update(datos).eq('id', id);
+  if (error) throw new Error(error.message);
+}
+
 export async function checkInteres(usuarioId, eventoId) {
   const { data } = await supabase
     .from('intereses')

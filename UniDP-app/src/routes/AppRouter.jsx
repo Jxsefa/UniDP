@@ -19,6 +19,7 @@ const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage'));
 const CreateEventPage = lazy(() => import('../pages/create-event/CreateEventPage'));
 const CalendarPage  = lazy(() => import('../pages/calendar/CalendarPage'));
 const ProfilePage   = lazy(() => import('../pages/profile/ProfilePage'));
+const EditEventPage = lazy(() => import('../pages/edit-event/EditEventPage'));
 
 export default function AppRouter() {
   return (
@@ -67,6 +68,15 @@ export default function AppRouter() {
           element={
             <ProtectedRoute>
               <ProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/evento/:id/editar"
+          element={
+            <ProtectedRoute showNav={false}>
+              <EditEventPage />
             </ProtectedRoute>
           }
         />

@@ -334,7 +334,7 @@ export default function ProfilePage() {
                               <button
                                 className={styles.actionBtn}
                                 type="button"
-                                onClick={() => navigate('/crear-evento')}
+                                onClick={() => navigate(`/evento/${event.id}/editar`)}
                               >
                                 Gestionar
                               </button>
