@@ -48,6 +48,21 @@ export async function getActiveEvents({ facultad, categoria } = {}) {
   return data;
 }
 
+export async function searchEvents({ query, categoria } = {}) {
+  let q = supabase
+    .from('evento')
+    .select('*')
+    .eq('estado', 'activo')
+    .or(`titulo.ilike.%${query}%,descripcion.ilike.%${query}%`)
+    .order('creado_en', { ascending: false });
+
+  if (categoria) q = q.eq('categoria', categoria);
+
+  const { data, error } = await q;
+  if (error) throw new Error(error.message);
+  return data;
+}
+
 export async function getEventById(id) {
   const { data, error } = await supabase
     .from('evento')
