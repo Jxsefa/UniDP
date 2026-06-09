@@ -138,5 +138,5 @@ export async function getEventosMeInteresa(usuarioId) {
     .eq('usuario_id', usuarioId)
     .order('creado_en', { ascending: true });
   if (error) throw new Error(error.message);
-  return data.map(item => item.evento);
+  return data.map(item => item.evento).filter(Boolean);
 }

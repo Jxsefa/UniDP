@@ -284,7 +284,7 @@ export default function CalendarPage() {
                 )}
 
                 <div className={styles.eventList}>
-                  {displayedEvents.map(ev => {
+                  {displayedEvents.filter(Boolean).map(ev => {
                     const dateField = ev.fecha_in || ev.creado_en;
                     const evDate    = dateField ? new Date(dateField) : null;
                     return (
