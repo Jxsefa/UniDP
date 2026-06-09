@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Home, Calendar, GraduationCap, Users, Trophy,
+  Home, Calendar, GraduationCap, Users, Users2, Trophy,
   Search, X, MapPin, Plus,
 } from 'lucide-react';
 import { getActiveEvents, searchEvents } from '../../services/events.service';
@@ -12,18 +12,21 @@ const ALL_TAB = { id: null, label: 'Todos' };
 const TABS = [ALL_TAB, ...CATEGORIES];
 
 const NAV_ITEMS = [
-  { id: null,       label: 'Home',       Icon: Home },
-  { id: '_cal',     label: 'Calendario', Icon: Calendar },
-  { id: 'Academia', label: 'Académico',  Icon: GraduationCap },
-  { id: 'Social',   label: 'Social',     Icon: Users },
-  { id: 'Deporte',  label: 'Deportes',   Icon: Trophy },
+  { path: '/dashboard',  categoria: null,       label: 'Home',       Icon: Home },
+  { path: '/calendario', categoria: null,        label: 'Calendario', Icon: Calendar },
+  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico',  Icon: GraduationCap },
+  { path: '/dashboard',  categoria: 'Social',    label: 'Social',     Icon: Users },
+  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',   Icon: Trophy },
+  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',     Icon: Users2 },
 ];
 
 const BOTTOM_NAV = [
-  { id: null,       label: 'Home',    Icon: Home },
-  { id: '_cal',     label: 'Eventos', Icon: Calendar },
-  { id: 'Social',   label: 'Social',  Icon: Users },
-  { id: 'Academia', label: 'Campus',  Icon: GraduationCap },
+  { path: '/dashboard',  categoria: null,       label: 'Home',      Icon: Home },
+  { path: '/calendario', categoria: null,        label: 'Eventos',   Icon: Calendar },
+  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico', Icon: GraduationCap },
+  { path: '/dashboard',  categoria: 'Social',    label: 'Social',    Icon: Users },
+  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',  Icon: Trophy },
+  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',    Icon: Users2 },
 ];
 
 function formatDate(iso) {
@@ -45,7 +48,8 @@ function PlaceholderAvatars() {
 }
 
 export default function DashboardPage() {
-  const navigate = useNavigate();
+  const navigate  = useNavigate();
+  const location  = useLocation();
   const [activeCategory, setActiveCategory] = useState(null);
   const [query, setQuery]                   = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -55,6 +59,11 @@ export default function DashboardPage() {
   const debounceRef = useRef(null);
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
+
+  // Apply category filter passed via navigation state (from sidebar/bottom-nav)
+  useEffect(() => {
+    setActiveCategory(location.state?.categoria ?? null);
+  }, [location.state]);
 
   function handleSearchChange(e) {
     const value = e.target.value;
@@ -81,14 +90,19 @@ export default function DashboardPage() {
       .finally(() => setLoading(false));
   }, [activeCategory, debouncedQuery]);
 
-  function handleNavClick(itemId) {
-    if (itemId === '_cal') return;
-    setActiveCategory(itemId);
+  function handleNavClick({ path, categoria }) {
+    if (categoria) {
+      navigate(path, { state: { categoria } });
+    } else {
+      navigate(path);
+    }
   }
 
-  function isNavActive(itemId) {
-    if (itemId === '_cal') return false;
-    return activeCategory === itemId;
+  // Active when on the right path; for /dashboard items also match the active category.
+  function isNavActive({ path, categoria }) {
+    if (location.pathname !== path) return false;
+    if (path === '/dashboard') return (categoria ?? null) === activeCategory;
+    return true;
   }
 
   return (
@@ -102,15 +116,15 @@ export default function DashboardPage() {
         </div>
 
         <nav className={styles.sidebarNav}>
-          {NAV_ITEMS.map(({ id, label, Icon }) => (
+          {NAV_ITEMS.map((item) => (
             <button
-              key={id ?? 'home'}
-              className={`${styles.navItem} ${isNavActive(id) ? styles.navItemActive : ''}`}
-              onClick={() => handleNavClick(id)}
+              key={item.label}
+              className={`${styles.navItem} ${isNavActive(item) ? styles.navItemActive : ''}`}
+              onClick={() => handleNavClick(item)}
               type="button"
             >
-              <Icon size={20} />
-              <span>{label}</span>
+              <item.Icon size={20} />
+              <span>{item.label}</span>
             </button>
           ))}
         </nav>
@@ -251,15 +265,15 @@ export default function DashboardPage() {
 
       {/* ── Bottom navigation — mobile only ── */}
       <nav className={styles.bottomNav}>
-        {BOTTOM_NAV.map(({ id, label, Icon }) => (
+        {BOTTOM_NAV.map((item) => (
           <button
-            key={id ?? 'home'}
-            className={`${styles.bottomNavItem} ${isNavActive(id) ? styles.bottomNavActive : ''}`}
-            onClick={() => handleNavClick(id)}
+            key={item.label}
+            className={`${styles.bottomNavItem} ${isNavActive(item) ? styles.bottomNavActive : ''}`}
+            onClick={() => handleNavClick(item)}
             type="button"
           >
-            <Icon size={22} />
-            <span>{label}</span>
+            <item.Icon size={22} />
+            <span>{item.label}</span>
           </button>
         ))}
       </nav>

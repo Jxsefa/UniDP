@@ -74,3 +74,13 @@ export async function getEventById(id) {
   if (error) throw new Error(error.message);
   return data;
 }
+
+export async function getEventosMeInteresa(usuarioId) {
+  const { data, error } = await supabase
+    .from('intereses')
+    .select('evento_id, creado_en, evento(*)')
+    .eq('usuario_id', usuarioId)
+    .order('creado_en', { ascending: true });
+  if (error) throw new Error(error.message);
+  return data.map(item => item.evento);
+}

@@ -17,6 +17,7 @@ import Spinner from '../components/ui/Spinner';
 const LoginPage = lazy(() => import('../pages/login/LoginPage'));
 const DashboardPage = lazy(() => import('../pages/dashboard/DashboardPage'));
 const CreateEventPage = lazy(() => import('../pages/create-event/CreateEventPage'));
+const CalendarPage = lazy(() => import('../pages/calendar/CalendarPage'));
 
 export default function AppRouter() {
   return (
@@ -47,6 +48,15 @@ export default function AppRouter() {
           element={
             <ProtectedRoute showNav={false}>
               <CreateEventPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/calendario"
+          element={
+            <ProtectedRoute>
+              <CalendarPage />
             </ProtectedRoute>
           }
         />
