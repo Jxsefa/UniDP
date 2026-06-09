@@ -52,10 +52,6 @@
   background: var(--color-surface-container);
 }
 
-.avatarWrap {
-  position: relative;
-}
-
 .avatarBtn {
   width: 36px;
   height: 36px;
@@ -84,33 +80,3 @@
   line-height: 1;
 }
 
-.dropdown {
-  position: absolute;
-  top: calc(100% + 8px);
-  right: 0;
-  min-width: 160px;
-  background: #fff;
-  border: 1px solid var(--color-outline-variant);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-  overflow: hidden;
-  z-index: 300;
-}
-
-.dropdownItem {
-  display: block;
-  width: 100%;
-  padding: 10px 16px;
-  border: none;
-  background: transparent;
-  text-align: left;
-  font-size: 0.875rem;
-  font-family: var(--font-family);
-  color: var(--color-on-surface);
-  cursor: pointer;
-  transition: background 0.12s;
-}
-
-.dropdownItem:hover {
-  background: var(--color-surface-container);
-}

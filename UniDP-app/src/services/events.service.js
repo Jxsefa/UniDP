@@ -75,6 +75,44 @@ export async function getEventById(id) {
   return data;
 }
 
+export async function getEventosByAutor(autorId) {
+  const { data, error } = await supabase
+    .from('evento').select('*')
+    .eq('autor_id', autorId)
+    .order('creado_en', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function getEventosPasados(usuarioId) {
+  const { data, error } = await supabase
+    .from('evento').select('*')
+    .eq('autor_id', usuarioId)
+    .lt('expires_at', new Date().toISOString())
+    .order('expires_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function toggleInteres(usuarioId, eventoId) {
+  const { data: existing } = await supabase
+    .from('intereses')
+    .select('id')
+    .eq('usuario_id', usuarioId)
+    .eq('evento_id', eventoId)
+    .maybeSingle();
+  if (existing) {
+    const { error } = await supabase.from('intereses').delete().eq('id', existing.id);
+    if (error) throw new Error(error.message);
+    return false;
+  } else {
+    const { error } = await supabase.from('intereses')
+      .insert({ usuario_id: usuarioId, evento_id: eventoId, creado_en: new Date().toISOString() });
+    if (error) throw new Error(error.message);
+    return true;
+  }
+}
+
 export async function getEventosMeInteresa(usuarioId) {
   const { data, error } = await supabase
     .from('intereses')

@@ -32,3 +32,34 @@ export function onAuthStateChange(callback) {
   });
   return subscription;
 }
+
+export async function getUserProfile(userId) {
+  const { data, error } = await supabase
+    .from('usuario')
+    .select('*')
+    .eq('id', userId)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+export async function updateProfile(userId, { nombre, biografia, fotoFile }) {
+  let foto_url = null;
+  if (fotoFile) {
+    const path = `avatars/${userId}`;
+    await supabase.storage.from('profiles').upload(path, fotoFile, { upsert: true });
+    const { data } = supabase.storage.from('profiles').getPublicUrl(path);
+    foto_url = data.publicUrl;
+  }
+  const updates = { nombre };
+  if (biografia !== undefined) updates.biografia = biografia;
+  if (foto_url) updates.foto_url = foto_url;
+
+  let { error } = await supabase.from('usuario').update(updates).eq('id', userId);
+  // Retry without biografia if that column doesn't exist yet
+  if (error && updates.biografia !== undefined) {
+    const { biografia: _b, ...safeUpdates } = updates;
+    ({ error } = await supabase.from('usuario').update(safeUpdates).eq('id', userId));
+  }
+  if (error) throw new Error(error.message);
+}
