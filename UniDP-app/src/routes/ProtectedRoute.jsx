@@ -13,7 +13,7 @@ import { useAuth } from '../hooks/useAuth';
 import Navbar from '../components/layout/Navbar';
 import Spinner from '../components/ui/Spinner';
 
-export default function ProtectedRoute({ children }) {
+export default function ProtectedRoute({ children, showNav = true }) {
   const { user, loading } = useAuth();
 
   if (loading) return <Spinner />;
@@ -24,7 +24,7 @@ export default function ProtectedRoute({ children }) {
 
   return (
     <>
-      <Navbar />
+      {showNav && <Navbar />}
       {children}
     </>
   );

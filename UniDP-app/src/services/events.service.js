@@ -9,7 +9,7 @@ export async function uploadEventImage(file) {
   return data.publicUrl;
 }
 
-export async function createEvent({ titulo, categoria, descripcion, ubicacion, fechaInicio, duracion, esPublico, autorId, imagenUrl }) {
+export async function createEvent({ titulo, categoria, descripcion, ubicacion, fechaInicio, duracion, capacidad, autorId, imagenUrl }) {
   const horas    = parseInt(duracion);
   const fechaFin = new Date(new Date(fechaInicio).getTime() + horas * 3600 * 1000).toISOString();
 
@@ -17,7 +17,7 @@ export async function createEvent({ titulo, categoria, descripcion, ubicacion, f
     titulo:      titulo.trim(),
     categoria:   categoria,
     descripcion: descripcion.trim(),
-    ubicacion:   ubicacion.trim(),
+    ubicacion:   ubicacion,
     duracion:    `${horas} hora${horas > 1 ? 's' : ''}`,
     autor_id:    autorId,
     creado_en:   new Date().toISOString(),
@@ -25,7 +25,8 @@ export async function createEvent({ titulo, categoria, descripcion, ubicacion, f
     expires_at:  fechaFin,
     fecha_fin:   fechaFin,
     estado:      'activo',
-    es_oficial:  esPublico,
+    es_oficial:  true,
+    capacidad:   capacidad ?? null,
     imagen_url:  imagenUrl ?? null,
   }).select().single();
 

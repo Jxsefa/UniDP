@@ -45,7 +45,7 @@ export default function AppRouter() {
         <Route
           path="/crear-evento"
           element={
-            <ProtectedRoute>
+            <ProtectedRoute showNav={false}>
               <CreateEventPage />
             </ProtectedRoute>
           }
