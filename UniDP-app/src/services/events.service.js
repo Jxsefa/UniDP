@@ -39,7 +39,9 @@ export async function getActiveEvents({ facultad, categoria } = {}) {
     .from('evento')
     .select('*')
     .eq('estado', 'activo')
-    .order('creado_en', { ascending: false });
+    .gt('expires_at', new Date().toISOString())
+    .order('creado_en', { ascending: false })
+    .limit(20);
 
   if (facultad) query = query.eq('facultad', facultad);
   if (categoria) query = query.eq('categoria', categoria);
@@ -54,8 +56,10 @@ export async function searchEvents({ query, categoria } = {}) {
     .from('evento')
     .select('*')
     .eq('estado', 'activo')
+    .gt('expires_at', new Date().toISOString())
     .or(`titulo.ilike.%${query}%,descripcion.ilike.%${query}%`)
-    .order('creado_en', { ascending: false });
+    .order('creado_en', { ascending: false })
+    .limit(20);
 
   if (categoria) q = q.eq('categoria', categoria);
 
@@ -138,5 +142,8 @@ export async function getEventosMeInteresa(usuarioId) {
     .eq('usuario_id', usuarioId)
     .order('creado_en', { ascending: true });
   if (error) throw new Error(error.message);
-  return data.map(item => item.evento).filter(Boolean);
+  return data
+    .map(item => item.evento)
+    .filter(Boolean)
+    .filter(ev => new Date(ev.expires_at) > new Date());
 }
