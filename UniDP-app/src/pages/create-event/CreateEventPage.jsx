@@ -1,5 +1,6 @@
 import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bell } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { createEvent, uploadEventImage } from '../../services/events.service';
 import { CATEGORIES, DURATIONS } from '../../constants/categories';
@@ -8,7 +9,15 @@ import styles from './CreateEventPage.module.css';
 
 export default function CreateEventPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+
+  const avatarUrl = profile?.foto_url || user?.user_metadata?.avatar_url;
+  const initials  = (() => {
+    const name = user?.user_metadata?.full_name || user?.email || '';
+    const parts = name.split(/[\s@]/);
+    if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  })();
   const fileInputRef = useRef(null);
 
   // Imagen
@@ -115,12 +124,21 @@ export default function CreateEventPage() {
           <span className={styles.navTitle}>Nuevo evento</span>
         </div>
         <div className={styles.navRight}>
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-            notifications
-          </span>
-          <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
-            account_circle
-          </span>
+          <button className={styles.iconBtn} aria-label="Notificaciones" type="button">
+            <Bell size={20} />
+          </button>
+          <button
+            className={styles.avatarBtn}
+            onClick={() => navigate('/perfil')}
+            aria-label="Mi perfil"
+            type="button"
+          >
+            {avatarUrl ? (
+              <img src={avatarUrl} alt="Avatar" className={styles.avatarImg} />
+            ) : (
+              <span className={styles.avatarInitials}>{initials}</span>
+            )}
+          </button>
         </div>
       </nav>
 
