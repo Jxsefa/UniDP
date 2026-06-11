@@ -325,13 +325,11 @@ export default function CalendarPage() {
 
                         {/* Actions */}
                         <div className={styles.cardActions}>
-                          {ev.imagen_url && (
-                            <img
-                              src={ev.imagen_url}
-                              alt={ev.titulo}
-                              className={styles.thumb}
-                            />
-                          )}
+                          <img
+                            src={ev.imagen_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800'}
+                            alt={ev.titulo}
+                            className={styles.thumb}
+                          />
                           <button
                             className={styles.removeBtn}
                             onClick={() => handleRemove(ev.id)}

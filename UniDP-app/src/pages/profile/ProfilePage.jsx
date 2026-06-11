@@ -303,15 +303,11 @@ export default function ProfilePage() {
                     event && (
                       <div key={event.id} className={styles.card}>
                         <div className={styles.cardImageWrap}>
-                          {event.imagen_url ? (
-                            <img
-                              src={event.imagen_url}
-                              alt={event.titulo}
-                              className={styles.cardImage}
-                            />
-                          ) : (
-                            <div className={styles.cardImagePlaceholder} />
-                          )}
+                          <img
+                            src={event.imagen_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800'}
+                            alt={event.titulo}
+                            className={styles.cardImage}
+                          />
                           {event.categoria && (
                             <span className={styles.cardBadge}>{event.categoria}</span>
                           )}

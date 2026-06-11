@@ -144,11 +144,11 @@ function TimelineEventCard({ event, userId, organizer }) {
 
   return (
     <div className={styles.timelineCard}>
-      {event.imagen_url ? (
-        <img src={event.imagen_url} alt={event.titulo} className={styles.timelineCardImage} />
-      ) : (
-        <div className={styles.timelineCardImagePlaceholder} />
-      )}
+      <img
+        src={event.imagen_url || 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800'}
+        alt={event.titulo}
+        className={styles.timelineCardImage}
+      />
 
       <div className={styles.timelineCardBody}>
         <div className={styles.timelineCardHeader}>
