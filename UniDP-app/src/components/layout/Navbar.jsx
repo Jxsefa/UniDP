@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { Bell, LogOut } from 'lucide-react';
+import { Bell, LogOut, Sun, Moon } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import { useTheme } from '../../hooks/useTheme';
 import styles from './Navbar.module.css';
 
 function getInitials(user) {
@@ -14,6 +15,7 @@ function getInitials(user) {
 
 export default function Navbar() {
   const { user, profile, logout } = useAuth();
+  const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -27,9 +29,25 @@ export default function Navbar() {
   return (
     <header className={styles.navbar}>
       <div className={styles.inner}>
-        <span className={styles.brandName}>UniDP</span>
+        <button
+          className={styles.brandName}
+          onClick={() => navigate('/dashboard')}
+          aria-label="Ir al inicio"
+          type="button"
+        >
+          UniDP
+        </button>
 
         <div className={styles.right}>
+          <button
+            className={styles.iconBtn}
+            aria-label={theme === 'dark' ? 'Activar modo claro' : 'Activar modo oscuro'}
+            onClick={toggleTheme}
+            type="button"
+          >
+            {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
+          </button>
+
           <button className={styles.iconBtn} aria-label="Notificaciones" type="button">
             <Bell size={20} />
           </button>

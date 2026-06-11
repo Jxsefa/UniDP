@@ -1,0 +1,36 @@
+.avatarStack {
+  display: flex;
+  align-items: center;
+}
+
+.miniAvatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid var(--color-surface-lowest);
+  margin-left: -8px;
+  flex-shrink: 0;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.miniAvatar:first-child {
+  margin-left: 0;
+}
+
+.miniAvatarInitials {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.miniAvatarMore {
+  background: var(--color-surface-container);
+}
+
+.miniAvatarMore .miniAvatarInitials {
+  color: var(--color-on-surface-variant);
+  font-size: 9px;
+}

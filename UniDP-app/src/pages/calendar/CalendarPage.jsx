@@ -1,31 +1,12 @@
 import { useEffect, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import {
-  Home, Calendar, GraduationCap, Users, Users2, Trophy,
-  ChevronLeft, ChevronRight, Clock, MapPin, Plus,
-} from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
+import {
+  Calendar, ChevronLeft, ChevronRight, Clock, MapPin,
+} from 'lucide-react';
 import { getEventosMeInteresa, toggleInteres } from '../../services/events.service';
 import Spinner from '../../components/ui/Spinner';
+import AppShell from '../../components/layout/AppShell';
 import styles from './CalendarPage.module.css';
-
-const NAV_ITEMS = [
-  { path: '/dashboard',  categoria: null,       label: 'Home',       Icon: Home },
-  { path: '/calendario', categoria: null,        label: 'Calendario', Icon: Calendar },
-  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico',  Icon: GraduationCap },
-  { path: '/dashboard',  categoria: 'Social',    label: 'Social',     Icon: Users },
-  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',   Icon: Trophy },
-  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',     Icon: Users2 },
-];
-
-const BOTTOM_NAV = [
-  { path: '/dashboard',  categoria: null,       label: 'Home',      Icon: Home },
-  { path: '/calendario', categoria: null,        label: 'Eventos',   Icon: Calendar },
-  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico', Icon: GraduationCap },
-  { path: '/dashboard',  categoria: 'Social',    label: 'Social',    Icon: Users },
-  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',  Icon: Trophy },
-  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',    Icon: Users2 },
-];
 
 const WEEK_DAYS = ['L', 'M', 'M', 'J', 'V', 'S', 'D'];
 
@@ -82,8 +63,6 @@ function buildCalendarGrid(year, month) {
 /* ── Component ───────────────────────────────────────────── */
 export default function CalendarPage() {
   const { user } = useAuth();
-  const navigate  = useNavigate();
-  const location  = useLocation();
 
   const today = new Date();
   const [viewYear,  setViewYear]  = useState(today.getFullYear());
@@ -157,61 +136,10 @@ export default function CalendarPage() {
     }
   }
 
-  function handleNavClick({ path, categoria }) {
-    if (categoria) {
-      navigate(path, { state: { categoria } });
-    } else {
-      navigate(path);
-    }
-  }
-
-  // On /calendario only the Calendario item (no categoria, matching path) is active.
-  function isNavActive({ path, categoria }) {
-    if (location.pathname !== path) return false;
-    if (categoria) return false;
-    return true;
-  }
-
   /* ── Render ──────────────────────────────────────────── */
   return (
-    <div className={styles.layout}>
-
-      {/* ── Sidebar — desktop only ── */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarLogo}>UniDP Hub</span>
-          <span className={styles.sidebarSub}>Universidad Diego Portales</span>
-        </div>
-
-        <nav className={styles.sidebarNav}>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.label}
-              className={`${styles.navItem} ${isNavActive(item) ? styles.navItemActive : ''}`}
-              onClick={() => handleNavClick(item)}
-              type="button"
-            >
-              <item.Icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <button
-            className={styles.createBtnFull}
-            onClick={() => navigate('/crear-evento')}
-            type="button"
-          >
-            <Plus size={18} />
-            Crear Evento
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main ── */}
-      <main className={styles.main}>
-        <div className={styles.content}>
+    <AppShell>
+      <div className={styles.content}>
 
           {loading && <Spinner />}
 
@@ -321,17 +249,6 @@ export default function CalendarPage() {
                               </span>
                             )}
                           </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className={styles.cardActions}>
-                          {ev.imagen_url && (
-                            <img
-                              src={ev.imagen_url}
-                              alt={ev.titulo}
-                              className={styles.thumb}
-                            />
-                          )}
                           <button
                             className={styles.removeBtn}
                             onClick={() => handleRemove(ev.id)}
@@ -340,6 +257,17 @@ export default function CalendarPage() {
                             Quitar
                           </button>
                         </div>
+
+                        {/* Thumbnail */}
+                        {ev.imagen_url && (
+                          <div className={styles.thumbWrap}>
+                            <img
+                              src={ev.imagen_url}
+                              alt={ev.titulo}
+                              className={styles.thumb}
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -347,33 +275,7 @@ export default function CalendarPage() {
               </section>
             </>
           )}
-        </div>
-      </main>
-
-      {/* ── Bottom navigation — mobile only ── */}
-      <nav className={styles.bottomNav}>
-        {BOTTOM_NAV.map((item) => (
-          <button
-            key={item.label}
-            className={`${styles.bottomNavItem} ${isNavActive(item) ? styles.bottomNavActive : ''}`}
-            onClick={() => handleNavClick(item)}
-            type="button"
-          >
-            <item.Icon size={22} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      {/* ── FAB — mobile only ── */}
-      <button
-        className={styles.fab}
-        onClick={() => navigate('/crear-evento')}
-        aria-label="Crear evento"
-        type="button"
-      >
-        <Plus size={24} />
-      </button>
-    </div>
+      </div>
+    </AppShell>
   );
 }

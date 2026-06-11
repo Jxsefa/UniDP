@@ -9,9 +9,8 @@ export async function uploadEventImage(file) {
   return data.publicUrl;
 }
 
-export async function createEvent({ titulo, categoria, descripcion, ubicacion, fechaInicio, duracion, capacidad, autorId, imagenUrl }) {
-  const horas    = parseInt(duracion);
-  const fechaFin = new Date(new Date(fechaInicio).getTime() + horas * 3600 * 1000).toISOString();
+export async function createEvent({ titulo, categoria, descripcion, ubicacion, fechaInicio, fechaFin, capacidad, autorId, imagenUrl }) {
+  const horas = Math.max(1, Math.round((new Date(fechaFin) - new Date(fechaInicio)) / 3600000));
 
   const { data, error } = await supabase.from('evento').insert({
     titulo:      titulo.trim(),
@@ -83,6 +82,7 @@ export async function getEventosByAutor(autorId) {
   const { data, error } = await supabase
     .from('evento').select('*')
     .eq('autor_id', autorId)
+    .gt('expires_at', new Date().toISOString())
     .order('creado_en', { ascending: false });
   if (error) throw new Error(error.message);
   return data;
@@ -110,6 +110,18 @@ export async function toggleInteres(usuarioId, eventoId) {
     if (error) throw new Error(error.message);
     return false;
   } else {
+    const { data: evento, error: eventoError } = await supabase
+      .from('evento')
+      .select('capacidad')
+      .eq('id', eventoId)
+      .single();
+    if (eventoError) throw new Error(eventoError.message);
+
+    if (evento.capacidad != null) {
+      const count = await getInteresCount(eventoId);
+      if (count >= evento.capacidad) throw new Error('CUPO_LLENO');
+    }
+
     const { error } = await supabase.from('intereses')
       .insert({ usuario_id: usuarioId, evento_id: eventoId, creado_en: new Date().toISOString() });
     if (error) throw new Error(error.message);
@@ -120,6 +132,14 @@ export async function toggleInteres(usuarioId, eventoId) {
 export async function updateEvent(id, datos) {
   const { error } = await supabase.from('evento').update(datos).eq('id', id);
   if (error) throw new Error(error.message);
+}
+
+export async function deleteEvent(id) {
+  const { data, error } = await supabase.from('evento').delete().eq('id', id).select();
+  if (error) throw new Error(error.message);
+  if (!data || data.length === 0) {
+    throw new Error('No se pudo eliminar el evento (sin permisos).');
+  }
 }
 
 export async function checkInteres(usuarioId, eventoId) {
@@ -161,6 +181,19 @@ export async function getInteresCount(eventoId) {
     .select('*', { count: 'exact', head: true })
     .eq('evento_id', eventoId);
   return count ?? 0;
+}
+
+export async function getEventosAsistidos(usuarioId) {
+  const { data, error } = await supabase
+    .from('intereses')
+    .select('evento_id, creado_en, evento(*)')
+    .eq('usuario_id', usuarioId)
+    .order('creado_en', { ascending: false });
+  if (error) throw new Error(error.message);
+  return data
+    .map(item => item.evento)
+    .filter(Boolean)
+    .filter(ev => new Date(ev.expires_at) <= new Date());
 }
 
 export async function getEventosMeInteresa(usuarioId) {

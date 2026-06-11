@@ -1,0 +1,198 @@
+.picker {
+  position: relative;
+  width: 100%;
+}
+
+.trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--color-surface-high);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  text-align: left;
+  box-sizing: border-box;
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.trigger:hover {
+  background: var(--color-surface-container);
+}
+
+.trigger[aria-expanded="true"] {
+  border-color: var(--color-primary);
+}
+
+.trigger .material-symbols-outlined {
+  color: var(--color-primary);
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.triggerLabel {
+  flex: 1;
+}
+
+.triggerEmpty .triggerLabel {
+  font-weight: 400;
+  color: var(--color-on-surface-variant);
+  opacity: 0.7;
+}
+
+/* ── Popover ─────────────────────────────────────────────── */
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 20;
+  width: 280px;
+  background: var(--color-surface-container);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 8px 24px rgba(41, 23, 20, 0.16);
+  padding: 12px;
+}
+
+.calendarHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.monthLabel {
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: capitalize;
+  color: var(--color-on-surface);
+}
+
+.navBtn {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: var(--color-surface-high);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.navBtn:hover {
+  background: var(--color-outline-variant);
+}
+
+.navBtn .material-symbols-outlined {
+  font-size: 18px;
+}
+
+.weekRow {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  margin-bottom: 4px;
+}
+
+.weekDay {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--color-on-surface-variant);
+  text-transform: uppercase;
+}
+
+.daysGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.dayCell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background: none;
+  font-size: 13px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: var(--color-on-surface);
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.dayCell:hover:not(:disabled) {
+  background: var(--color-surface-high);
+}
+
+.dayOutside {
+  color: var(--color-on-surface-variant);
+  opacity: 0.4;
+}
+
+.daySelected {
+  background: var(--color-primary) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.dayDisabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
+/* ── Time row ────────────────────────────────────────────── */
+.timeRow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-surface-high);
+}
+
+.timeRow .material-symbols-outlined {
+  color: var(--color-primary);
+  font-size: 20px;
+}
+
+.timeInput {
+  flex: 1;
+  background: var(--color-surface-high);
+  border: 2px solid transparent;
+  border-radius: var(--radius-md);
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: var(--font-family);
+  color: var(--color-on-surface);
+  color-scheme: light;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+.timeInput::-webkit-calendar-picker-indicator {
+  cursor: pointer;
+  border-radius: var(--radius-sm, 6px);
+  padding: 2px;
+  filter: invert(15%) sepia(64%) saturate(6450%) hue-rotate(355deg) brightness(85%) contrast(101%);
+  opacity: 0.75;
+}
+
+.timeInput::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}

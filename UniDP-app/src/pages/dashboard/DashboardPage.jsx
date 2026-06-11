@@ -1,45 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-  Home, Calendar, GraduationCap, Users, Users2, Trophy,
-  Search, X, MapPin, Plus,
+  Search, X, MapPin,
 } from 'lucide-react';
 import {
   getActiveEvents, searchEvents,
-  toggleInteres, checkInteres, getInteresCount, getInteresados,
 } from '../../services/events.service';
 import { getUsuariosByIds } from '../../services/auth.service';
 import { useAuth } from '../../hooks/useAuth';
+import { useInteres } from '../../hooks/useInteres';
 import { CATEGORIES } from '../../constants/categories';
+import { FALLBACK_COLORS, formatTime, getInitials } from '../../utils/eventFormat';
+import InteresadosAvatars from '../../components/dashboard/InteresadosAvatars';
+import EventDrawer from '../../components/dashboard/EventDrawer';
+import SavedEventsCalendar from '../../components/dashboard/SavedEventsCalendar';
+import AppShell from '../../components/layout/AppShell';
 import styles from './DashboardPage.module.css';
 
 const ALL_TAB = { id: null, label: 'Todos' };
 const TABS = [ALL_TAB, ...CATEGORIES];
-
-const NAV_ITEMS = [
-  { path: '/dashboard',  categoria: null,       label: 'Home',       Icon: Home },
-  { path: '/calendario', categoria: null,        label: 'Calendario', Icon: Calendar },
-  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico',  Icon: GraduationCap },
-  { path: '/dashboard',  categoria: 'Social',    label: 'Social',     Icon: Users },
-  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',   Icon: Trophy },
-  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',     Icon: Users2 },
-];
-
-const BOTTOM_NAV = [
-  { path: '/dashboard',  categoria: null,       label: 'Home',      Icon: Home },
-  { path: '/calendario', categoria: null,        label: 'Eventos',   Icon: Calendar },
-  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico', Icon: GraduationCap },
-  { path: '/dashboard',  categoria: 'Social',    label: 'Social',    Icon: Users },
-  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',  Icon: Trophy },
-  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',    Icon: Users2 },
-];
-
-function formatTime(iso) {
-  if (!iso) return null;
-  return new Date(iso).toLocaleTimeString('es-CL', {
-    hour: '2-digit', minute: '2-digit', hour12: false,
-  });
-}
 
 function formatDayLabel(date) {
   const dayMonth = date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }).replace('.', '');
@@ -65,91 +44,14 @@ function groupEventsByDate(events) {
   return groups;
 }
 
-const FALLBACK_COLORS = ['#b70006', '#5e3f3a', '#936e69'];
-
-function getInitials(nombre) {
-  const parts = (nombre || '').trim().split(/\s+/);
-  if (parts.length >= 2 && parts[0] && parts[1]) {
-    return (parts[0][0] + parts[1][0]).toUpperCase();
-  }
-  return (nombre || '').slice(0, 2).toUpperCase();
-}
-
-function InteresadosAvatars({ interesados, extraCount }) {
-  if (!interesados.length) return null;
-  return (
-    <div className={styles.avatarStack}>
-      {interesados.map((u, i) => (
-        u.foto_url ? (
-          <img
-            key={u.id}
-            src={u.foto_url}
-            alt={u.nombre}
-            className={styles.miniAvatar}
-          />
-        ) : (
-          <div
-            key={u.id}
-            className={styles.miniAvatar}
-            style={{ background: FALLBACK_COLORS[i % FALLBACK_COLORS.length] }}
-          >
-            <span className={styles.miniAvatarInitials}>{getInitials(u.nombre)}</span>
-          </div>
-        )
-      ))}
-      {extraCount > 0 && (
-        <div className={`${styles.miniAvatar} ${styles.miniAvatarMore}`}>
-          <span className={styles.miniAvatarInitials}>+{extraCount}</span>
-        </div>
-      )}
-    </div>
-  );
-}
-
-function TimelineEventCard({ event, userId, organizer }) {
-  const [liked, setLiked] = useState(false);
-  const [count, setCount] = useState(0);
-  const [interesados, setInteresados] = useState([]);
-  const [busy, setBusy] = useState(false);
-
-  useEffect(() => {
-    Promise.all([
-      userId ? checkInteres(userId, event.id) : Promise.resolve(false),
-      getInteresCount(event.id),
-      getInteresados(event.id),
-    ]).then(([isLiked, cnt, users]) => {
-      setLiked(isLiked);
-      setCount(cnt);
-      setInteresados(users);
-    }).catch(() => {});
-  }, [userId, event.id]);
-
-  async function handleToggle() {
-    if (!userId || busy) return;
-    setBusy(true);
-    const next = !liked;
-    setLiked(next);
-    setCount(c => c + (next ? 1 : -1));
-    try {
-      await toggleInteres(userId, event.id);
-      const users = await getInteresados(event.id);
-      setInteresados(users);
-    } catch {
-      setLiked(!next);
-      setCount(c => c + (next ? -1 : 1));
-    } finally {
-      setBusy(false);
-    }
-  }
+function TimelineEventCard({ event, userId, organizer, onOpen }) {
+  const {
+    count, interesados, cupoLleno,
+    cuposRestantes, pocosCupos, sinCupos,
+  } = useInteres(event, userId);
 
   return (
-    <div className={styles.timelineCard}>
-      {event.imagen_url ? (
-        <img src={event.imagen_url} alt={event.titulo} className={styles.timelineCardImage} />
-      ) : (
-        <div className={styles.timelineCardImagePlaceholder} />
-      )}
-
+    <div className={styles.timelineCard} onClick={() => onOpen(event)} role="button" tabIndex={0}>
       <div className={styles.timelineCardBody}>
         <div className={styles.timelineCardHeader}>
           {event.fecha_in && (
@@ -190,22 +92,29 @@ function TimelineEventCard({ event, userId, organizer }) {
             interesados={interesados}
             extraCount={Math.max(0, count - interesados.length)}
           />
-          <button
-            className={`${styles.interestBtn} ${liked ? styles.interestBtnActive : ''}`}
-            onClick={handleToggle}
-            disabled={busy}
-            type="button"
-          >
-            {liked ? 'Me interesa ♥' : 'Me interesa'}
-          </button>
+          {(pocosCupos || sinCupos) && (
+            <span className={styles.cuposBadge}>
+              {sinCupos ? 'Cupo lleno' : `¡Quedan ${cuposRestantes} cupos!`}
+            </span>
+          )}
         </div>
+
+        {cupoLleno && (
+          <p className={styles.cupoLlenoMsg}>Este evento ya alcanzó su cupo máximo.</p>
+        )}
       </div>
+
+      {event.imagen_url ? (
+        <img src={event.imagen_url} alt={event.titulo} className={styles.timelineCardImage} />
+      ) : (
+        <div className={styles.timelineCardImagePlaceholder} />
+      )}
     </div>
   );
 }
 
 export default function DashboardPage() {
-  const { user }   = useAuth();
+  const { user, profile } = useAuth();
   const navigate   = useNavigate();
   const location   = useLocation();
   const [activeCategory, setActiveCategory] = useState(null);
@@ -215,6 +124,7 @@ export default function DashboardPage() {
   const [organizers, setOrganizers]         = useState({});
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(null);
+  const [selectedEvent, setSelectedEvent]   = useState(null);
   const debounceRef = useRef(null);
 
   useEffect(() => () => clearTimeout(debounceRef.current), []);
@@ -255,60 +165,10 @@ export default function DashboardPage() {
 
   const dateGroups = groupEventsByDate(events);
 
-  function handleNavClick({ path, categoria }) {
-    if (categoria) {
-      navigate(path, { state: { categoria } });
-    } else {
-      navigate(path);
-    }
-  }
-
-  // Active when on the right path; for /dashboard items also match the active category.
-  function isNavActive({ path, categoria }) {
-    if (location.pathname !== path) return false;
-    if (path === '/dashboard') return (categoria ?? null) === activeCategory;
-    return true;
-  }
-
   return (
-    <div className={styles.layout}>
-
-      {/* ── Sidebar — desktop only ── */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarLogo}>UniDP Hub</span>
-          <span className={styles.sidebarSub}>Universidad Diego Portales</span>
-        </div>
-
-        <nav className={styles.sidebarNav}>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.label}
-              className={`${styles.navItem} ${isNavActive(item) ? styles.navItemActive : ''}`}
-              onClick={() => handleNavClick(item)}
-              type="button"
-            >
-              <item.Icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-
-        <div className={styles.sidebarFooter}>
-          <button
-            className={styles.createBtnFull}
-            onClick={() => navigate('/crear-evento')}
-            type="button"
-          >
-            <Plus size={18} />
-            Crear Evento
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main content ── */}
-      <main className={styles.main}>
-        <div className={styles.content}>
+    <AppShell activeCategory={activeCategory}>
+      <div className={styles.content}>
+        <div className={styles.feedColumn}>
 
           {/* Search */}
           <div className={styles.searchBar}>
@@ -397,6 +257,7 @@ export default function DashboardPage() {
                               event={event}
                               userId={user?.id}
                               organizer={organizers[event.autor_id]}
+                              onOpen={setSelectedEvent}
                             />
                           ))}
                         </div>
@@ -408,33 +269,22 @@ export default function DashboardPage() {
             </>
           )}
         </div>
-      </main>
 
-      {/* ── Bottom navigation — mobile only ── */}
-      <nav className={styles.bottomNav}>
-        {BOTTOM_NAV.map((item) => (
-          <button
-            key={item.label}
-            className={`${styles.bottomNavItem} ${isNavActive(item) ? styles.bottomNavActive : ''}`}
-            onClick={() => handleNavClick(item)}
-            type="button"
-          >
-            <item.Icon size={22} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
+        <aside className={styles.calendarColumn}>
+          <SavedEventsCalendar />
+        </aside>
+      </div>
 
-      {/* ── FAB — mobile only ── */}
-      <button
-        className={styles.fab}
-        onClick={() => navigate('/crear-evento')}
-        aria-label="Crear evento"
-        type="button"
-      >
-        <Plus size={24} />
-      </button>
-
-    </div>
+      {selectedEvent && (
+        <EventDrawer
+          event={selectedEvent}
+          organizer={organizers[selectedEvent.autor_id]}
+          userId={user?.id}
+          isAdmin={profile?.role === 'admin'}
+          onClose={() => setSelectedEvent(null)}
+          onDeleted={(id) => setEvents(prev => prev.filter(ev => ev.id !== id))}
+        />
+      )}
+    </AppShell>
   );
 }

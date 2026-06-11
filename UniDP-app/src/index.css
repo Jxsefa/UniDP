@@ -29,6 +29,37 @@
   --radius-full: 9999px;
   --shadow-sm: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
   --shadow-md: 0 4px 12px rgba(0,0,0,0.10), 0 2px 4px rgba(0,0,0,0.06);
+  --color-surface-glass: rgba(255, 255, 255, 0.88);
+  --color-overlay: rgba(41, 23, 20, 0.5);
+  --color-on-color: #ffffff;
+}
+
+[data-theme='dark'] {
+  --color-primary:              #ff5c52;
+  --color-primary-container:    #b3261e;
+  --color-on-primary:           #2b0000;
+  --color-on-primary-container: #ffe2dd;
+  --color-surface:              #1a1110;
+  --color-surface-low:          #15100f;
+  --color-surface-container:    #261c1a;
+  --color-surface-high:         #322523;
+  --color-surface-lowest:       #100b0a;
+  --color-secondary-fixed:      #3a2e2b;
+  --color-on-surface:           #f3e9e7;
+  --color-on-surface-variant:   #d8c2bd;
+  --color-outline:              #8f7a75;
+  --color-outline-variant:      #4a3a36;
+  --color-tertiary:             #ff8a80;
+  --color-tertiary-container:   #b3261e;
+  --color-error:                #ffb4ab;
+  --color-error-container:      #5c191b;
+  --color-success:              #7fd9a3;
+  --color-success-container:    #1f4030;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.3);
+  --color-surface-glass: rgba(26, 17, 16, 0.88);
+  --color-overlay: rgba(0, 0, 0, 0.6);
+  --color-on-color: #ffffff;
 }
 
 * {
@@ -41,6 +72,7 @@ body {
   font-family: var(--font-family);
   background: var(--color-surface);
   color: var(--color-on-surface);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 #root {

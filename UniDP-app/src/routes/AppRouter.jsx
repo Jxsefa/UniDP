@@ -20,6 +20,7 @@ const CreateEventPage = lazy(() => import('../pages/create-event/CreateEventPage
 const CalendarPage  = lazy(() => import('../pages/calendar/CalendarPage'));
 const ProfilePage   = lazy(() => import('../pages/profile/ProfilePage'));
 const EditEventPage = lazy(() => import('../pages/edit-event/EditEventPage'));
+const UserProfilePage = lazy(() => import('../pages/user-profile/UserProfilePage'));
 
 export default function AppRouter() {
   return (
@@ -48,7 +49,7 @@ export default function AppRouter() {
         <Route
           path="/crear-evento"
           element={
-            <ProtectedRoute showNav={false}>
+            <ProtectedRoute>
               <CreateEventPage />
             </ProtectedRoute>
           }
@@ -73,9 +74,18 @@ export default function AppRouter() {
         />
 
         <Route
+          path="/usuario/:id"
+          element={
+            <ProtectedRoute>
+              <UserProfilePage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
           path="/evento/:id/editar"
           element={
-            <ProtectedRoute showNav={false}>
+            <ProtectedRoute>
               <EditEventPage />
             </ProtectedRoute>
           }

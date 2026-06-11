@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
-  Home, Calendar, GraduationCap, Users, Users2, Trophy,
-  Camera, Edit, Plus, MapPin,
+  Calendar, Camera, Edit, MapPin, Trash2,
 } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { getUserProfile, updateProfile } from '../../services/auth.service';
@@ -10,39 +9,26 @@ import {
   getEventosByAutor,
   getEventosMeInteresa,
   getEventosPasados,
+  getEventosAsistidos,
   toggleInteres,
+  deleteEvent,
 } from '../../services/events.service';
 import Spinner from '../../components/ui/Spinner';
+import AppShell from '../../components/layout/AppShell';
 import styles from './ProfilePage.module.css';
-
-const NAV_ITEMS = [
-  { path: '/dashboard',  categoria: null,       label: 'Home',       Icon: Home },
-  { path: '/calendario', categoria: null,        label: 'Calendario', Icon: Calendar },
-  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico',  Icon: GraduationCap },
-  { path: '/dashboard',  categoria: 'Social',    label: 'Social',     Icon: Users },
-  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',   Icon: Trophy },
-  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',     Icon: Users2 },
-];
-
-const BOTTOM_NAV = [
-  { path: '/dashboard',  categoria: null,       label: 'Home',      Icon: Home },
-  { path: '/calendario', categoria: null,        label: 'Eventos',   Icon: Calendar },
-  { path: '/dashboard',  categoria: 'Academia',  label: 'Académico', Icon: GraduationCap },
-  { path: '/dashboard',  categoria: 'Social',    label: 'Social',    Icon: Users },
-  { path: '/dashboard',  categoria: 'Deporte',   label: 'Deportes',  Icon: Trophy },
-  { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',    Icon: Users2 },
-];
 
 const TABS = [
   { id: 'mis-eventos', label: 'Mis eventos' },
   { id: 'me-interesa', label: 'Me interesa' },
   { id: 'pasados',     label: 'Eventos pasados' },
+  { id: 'historial',   label: 'Historial asistido' },
 ];
 
 const EMPTY_MESSAGES = {
   'mis-eventos': 'No has creado ningún evento aún.',
   'me-interesa': 'No tienes eventos guardados. ¡Explora el feed!',
   'pasados':     'No tienes eventos pasados.',
+  'historial':   'Aún no tienes eventos en tu historial de asistencia.',
 };
 
 function getInitials(user, profile) {
@@ -64,7 +50,6 @@ function formatDate(iso) {
 export default function ProfilePage() {
   const { user, refreshProfile } = useAuth();
   const navigate    = useNavigate();
-  const location    = useLocation();
   const fileInputRef = useRef(null);
 
   const [profile, setProfile]         = useState(null);
@@ -72,6 +57,7 @@ export default function ProfilePage() {
   const [myEvents, setMyEvents]       = useState([]);
   const [savedEvents, setSavedEvents] = useState([]);
   const [pastEvents, setPastEvents]   = useState([]);
+  const [historyEvents, setHistoryEvents] = useState([]);
   const [loading, setLoading]         = useState(true);
   const [editOpen, setEditOpen]       = useState(false);
 
@@ -80,6 +66,8 @@ export default function ProfilePage() {
   const [editPreview, setEditPreview] = useState(null);
   const [saving, setSaving]           = useState(false);
   const [toast, setToast]             = useState(null);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deletingEvent, setDeletingEvent] = useState(false);
 
   useEffect(() => {
     if (!toast) return;
@@ -95,12 +83,14 @@ export default function ProfilePage() {
       getEventosByAutor(user.id),
       getEventosMeInteresa(user.id),
       getEventosPasados(user.id),
+      getEventosAsistidos(user.id),
     ])
-      .then(([prof, myEvs, saved, past]) => {
+      .then(([prof, myEvs, saved, past, history]) => {
         setProfile(prof);
         setMyEvents(myEvs ?? []);
         setSavedEvents((saved ?? []).filter(Boolean));
         setPastEvents(past ?? []);
+        setHistoryEvents((history ?? []).filter(Boolean));
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -143,6 +133,22 @@ export default function ProfilePage() {
     }
   }
 
+  async function handleDeleteEvent() {
+    if (!deleteTarget) return;
+    setDeletingEvent(true);
+    try {
+      await deleteEvent(deleteTarget);
+      setMyEvents(prev => prev.filter(ev => ev?.id !== deleteTarget));
+      setDeleteTarget(null);
+      setToast({ type: 'success', message: 'Evento eliminado correctamente' });
+    } catch (err) {
+      console.error(err);
+      setToast({ type: 'error', message: 'No se pudo eliminar el evento' });
+    } finally {
+      setDeletingEvent(false);
+    }
+  }
+
   async function handleQuitarInteres(eventoId) {
     if (!user) return;
     try {
@@ -153,20 +159,6 @@ export default function ProfilePage() {
     }
   }
 
-  function handleNavClick({ path, categoria }) {
-    if (categoria) {
-      navigate(path, { state: { categoria } });
-    } else {
-      navigate(path);
-    }
-  }
-
-  function isNavActive({ path, categoria }) {
-    if (location.pathname !== path) return false;
-    if (categoria) return false;
-    return true;
-  }
-
   const displayName = profile?.nombre || user?.user_metadata?.full_name || user?.email || '';
   const avatarUrl   = profile?.foto_url || user?.user_metadata?.avatar_url;
   const initials    = getInitials(user, profile);
@@ -175,47 +167,14 @@ export default function ProfilePage() {
     'mis-eventos': myEvents,
     'me-interesa': savedEvents,
     'pasados':     pastEvents,
+    'historial':   historyEvents,
   };
   const currentEvents = tabEvents[activeTab] || [];
 
   /* ── Render ────────────────────────────────────────────── */
   return (
-    <div className={styles.layout}>
-
-      {/* ── Sidebar — desktop only ── */}
-      <aside className={styles.sidebar}>
-        <div className={styles.sidebarHeader}>
-          <span className={styles.sidebarLogo}>UniDP Hub</span>
-          <span className={styles.sidebarSub}>Universidad Diego Portales</span>
-        </div>
-        <nav className={styles.sidebarNav}>
-          {NAV_ITEMS.map((item) => (
-            <button
-              key={item.label}
-              className={`${styles.navItem} ${isNavActive(item) ? styles.navItemActive : ''}`}
-              onClick={() => handleNavClick(item)}
-              type="button"
-            >
-              <item.Icon size={20} />
-              <span>{item.label}</span>
-            </button>
-          ))}
-        </nav>
-        <div className={styles.sidebarFooter}>
-          <button
-            className={styles.createBtnFull}
-            onClick={() => navigate('/crear-evento')}
-            type="button"
-          >
-            <Plus size={18} />
-            Crear Evento
-          </button>
-        </div>
-      </aside>
-
-      {/* ── Main ── */}
-      <main className={styles.main}>
-        <div className={styles.content}>
+    <AppShell>
+      <div className={styles.content}>
 
           {loading && <Spinner />}
 
@@ -287,7 +246,7 @@ export default function ProfilePage() {
                 <div className={styles.empty}>
                   <Calendar size={40} strokeWidth={1.5} />
                   <p>{EMPTY_MESSAGES[activeTab]}</p>
-                  {activeTab !== 'pasados' && (
+                  {activeTab !== 'pasados' && activeTab !== 'historial' && (
                     <button
                       className={styles.emptyAction}
                       type="button"
@@ -315,7 +274,7 @@ export default function ProfilePage() {
                           {event.categoria && (
                             <span className={styles.cardBadge}>{event.categoria}</span>
                           )}
-                          {activeTab === 'pasados' && (
+                          {(activeTab === 'pasados' || activeTab === 'historial') && (
                             <span className={styles.expiredBadge}>Expirado</span>
                           )}
                         </div>
@@ -341,13 +300,23 @@ export default function ProfilePage() {
                           </div>
                           <div className={styles.cardFooter}>
                             {activeTab === 'mis-eventos' && (
-                              <button
-                                className={styles.actionBtn}
-                                type="button"
-                                onClick={() => navigate(`/evento/${event.id}/editar`)}
-                              >
-                                Gestionar
-                              </button>
+                              <>
+                                <button
+                                  className={styles.actionBtn}
+                                  type="button"
+                                  onClick={() => navigate(`/evento/${event.id}/editar`)}
+                                >
+                                  Gestionar
+                                </button>
+                                <button
+                                  className={styles.deleteBtn}
+                                  type="button"
+                                  onClick={() => setDeleteTarget(event.id)}
+                                  aria-label="Eliminar evento"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              </>
                             )}
                             {activeTab === 'me-interesa' && (
                               <button
@@ -358,7 +327,7 @@ export default function ProfilePage() {
                                 Quitar
                               </button>
                             )}
-                            {activeTab === 'pasados' && (
+                            {(activeTab === 'pasados' || activeTab === 'historial') && (
                               <span className={styles.expiredLabel}>Evento finalizado</span>
                             )}
                           </div>
@@ -370,33 +339,7 @@ export default function ProfilePage() {
               )}
             </>
           )}
-        </div>
-      </main>
-
-      {/* ── Bottom nav — mobile only ── */}
-      <nav className={styles.bottomNav}>
-        {BOTTOM_NAV.map((item) => (
-          <button
-            key={item.label}
-            className={`${styles.bottomNavItem} ${isNavActive(item) ? styles.bottomNavActive : ''}`}
-            onClick={() => handleNavClick(item)}
-            type="button"
-          >
-            <item.Icon size={22} />
-            <span>{item.label}</span>
-          </button>
-        ))}
-      </nav>
-
-      {/* ── FAB — mobile only ── */}
-      <button
-        className={styles.fab}
-        onClick={() => navigate('/crear-evento')}
-        aria-label="Crear evento"
-        type="button"
-      >
-        <Plus size={24} />
-      </button>
+      </div>
 
       {/* ── Toast de confirmación ── */}
       {toast && (
@@ -470,6 +413,36 @@ export default function ProfilePage() {
           </div>
         </div>
       )}
-    </div>
+
+      {/* ── Delete confirm modal ── */}
+      {deleteTarget && (
+        <div className={styles.modalOverlay} onClick={() => !deletingEvent && setDeleteTarget(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <h2 className={styles.modalTitle}>Eliminar evento</h2>
+            <p className={styles.modalText}>
+              ¿Estás seguro de que quieres eliminar este evento? Esta acción no se puede deshacer.
+            </p>
+            <div className={styles.modalActions}>
+              <button
+                className={styles.cancelBtn}
+                type="button"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deletingEvent}
+              >
+                Cancelar
+              </button>
+              <button
+                className={styles.deleteConfirmBtn}
+                type="button"
+                onClick={handleDeleteEvent}
+                disabled={deletingEvent}
+              >
+                {deletingEvent ? 'Eliminando…' : 'Eliminar'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </AppShell>
   );
 }
