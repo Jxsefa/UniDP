@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Bell } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { createEvent, uploadEventImage } from '../../services/events.service';
 import { CATEGORIES } from '../../constants/categories';
@@ -10,7 +11,15 @@ import styles from './CreateEventPage.module.css';
 
 export default function CreateEventPage() {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+
+  const avatarUrl = profile?.foto_url || user?.user_metadata?.avatar_url;
+  const initials  = (() => {
+    const name = user?.user_metadata?.full_name || user?.email || '';
+    const parts = name.split(/[\s@]/);
+    if (parts.length >= 2 && parts[0] && parts[1]) return (parts[0][0] + parts[1][0]).toUpperCase();
+    return name.slice(0, 2).toUpperCase();
+  })();
   const fileInputRef = useRef(null);
 
   // Imagen
