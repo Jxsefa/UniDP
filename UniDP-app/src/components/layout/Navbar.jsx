@@ -13,7 +13,7 @@ function getInitials(user) {
 }
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, profile, logout } = useAuth();
   const navigate = useNavigate();
 
   async function handleLogout() {
@@ -21,7 +21,7 @@ export default function Navbar() {
     navigate('/login');
   }
 
-  const avatarUrl = user?.user_metadata?.avatar_url;
+  const avatarUrl = profile?.foto_url || user?.user_metadata?.avatar_url;
   const initials  = getInitials(user);
 
   return (

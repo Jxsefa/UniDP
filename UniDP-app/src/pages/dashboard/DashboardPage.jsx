@@ -6,8 +6,9 @@ import {
 } from 'lucide-react';
 import {
   getActiveEvents, searchEvents,
-  toggleInteres, checkInteres, getInteresCount,
+  toggleInteres, checkInteres, getInteresCount, getInteresados,
 } from '../../services/events.service';
+import { getUsuariosByIds } from '../../services/auth.service';
 import { useAuth } from '../../hooks/useAuth';
 import { CATEGORIES } from '../../constants/categories';
 import styles from './DashboardPage.module.css';
@@ -33,37 +34,93 @@ const BOTTOM_NAV = [
   { path: '/dashboard',  categoria: 'Clubes',    label: 'Clubes',    Icon: Users2 },
 ];
 
-function formatDate(iso) {
+function formatTime(iso) {
   if (!iso) return null;
-  return new Date(iso).toLocaleDateString('es-CL', {
-    weekday: 'short', day: 'numeric', month: 'short',
+  return new Date(iso).toLocaleTimeString('es-CL', {
+    hour: '2-digit', minute: '2-digit', hour12: false,
   });
 }
 
-function PlaceholderAvatars() {
-  const colors = ['#b70006', '#5e3f3a', '#936e69'];
+function formatDayLabel(date) {
+  const dayMonth = date.toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }).replace('.', '');
+  const weekday = date.toLocaleDateString('es-CL', { weekday: 'long' });
+  return { dayMonth, weekday };
+}
+
+function groupEventsByDate(events) {
+  const groups = [];
+  const map = new Map();
+  for (const event of events) {
+    if (!event.fecha_in) continue;
+    const date = new Date(event.fecha_in);
+    const key = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}`;
+    let group = map.get(key);
+    if (!group) {
+      group = { key, date, events: [] };
+      map.set(key, group);
+      groups.push(group);
+    }
+    group.events.push(event);
+  }
+  return groups;
+}
+
+const FALLBACK_COLORS = ['#b70006', '#5e3f3a', '#936e69'];
+
+function getInitials(nombre) {
+  const parts = (nombre || '').trim().split(/\s+/);
+  if (parts.length >= 2 && parts[0] && parts[1]) {
+    return (parts[0][0] + parts[1][0]).toUpperCase();
+  }
+  return (nombre || '').slice(0, 2).toUpperCase();
+}
+
+function InteresadosAvatars({ interesados, extraCount }) {
+  if (!interesados.length) return null;
   return (
     <div className={styles.avatarStack}>
-      {colors.map((bg, i) => (
-        <div key={i} className={styles.miniAvatar} style={{ background: bg }} />
+      {interesados.map((u, i) => (
+        u.foto_url ? (
+          <img
+            key={u.id}
+            src={u.foto_url}
+            alt={u.nombre}
+            className={styles.miniAvatar}
+          />
+        ) : (
+          <div
+            key={u.id}
+            className={styles.miniAvatar}
+            style={{ background: FALLBACK_COLORS[i % FALLBACK_COLORS.length] }}
+          >
+            <span className={styles.miniAvatarInitials}>{getInitials(u.nombre)}</span>
+          </div>
+        )
       ))}
+      {extraCount > 0 && (
+        <div className={`${styles.miniAvatar} ${styles.miniAvatarMore}`}>
+          <span className={styles.miniAvatarInitials}>+{extraCount}</span>
+        </div>
+      )}
     </div>
   );
 }
 
-function EventCard({ event, userId }) {
+function TimelineEventCard({ event, userId, organizer }) {
   const [liked, setLiked] = useState(false);
   const [count, setCount] = useState(0);
+  const [interesados, setInteresados] = useState([]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
-    if (!userId) return;
     Promise.all([
-      checkInteres(userId, event.id),
+      userId ? checkInteres(userId, event.id) : Promise.resolve(false),
       getInteresCount(event.id),
-    ]).then(([isLiked, cnt]) => {
+      getInteresados(event.id),
+    ]).then(([isLiked, cnt, users]) => {
       setLiked(isLiked);
       setCount(cnt);
+      setInteresados(users);
     }).catch(() => {});
   }, [userId, event.id]);
 
@@ -75,6 +132,8 @@ function EventCard({ event, userId }) {
     setCount(c => c + (next ? 1 : -1));
     try {
       await toggleInteres(userId, event.id);
+      const users = await getInteresados(event.id);
+      setInteresados(users);
     } catch {
       setLiked(!next);
       setCount(c => c + (next ? -1 : 1));
@@ -84,50 +143,53 @@ function EventCard({ event, userId }) {
   }
 
   return (
-    <div className={styles.card}>
-      <div className={styles.cardImageWrap}>
-        {event.imagen_url ? (
-          <img
-            src={event.imagen_url}
-            alt={event.titulo}
-            className={styles.cardImage}
-          />
-        ) : (
-          <div className={styles.cardImagePlaceholder} />
-        )}
-        {event.categoria && (
-          <span className={styles.cardBadge}>{event.categoria}</span>
-        )}
-      </div>
+    <div className={styles.timelineCard}>
+      {event.imagen_url ? (
+        <img src={event.imagen_url} alt={event.titulo} className={styles.timelineCardImage} />
+      ) : (
+        <div className={styles.timelineCardImagePlaceholder} />
+      )}
 
-      <div className={styles.cardBody}>
-        {event.categoria && (
-          <span className={styles.category}>{event.categoria}</span>
-        )}
-        <h2 className={styles.cardTitle}>{event.titulo}</h2>
-
-        <div className={styles.cardMeta}>
+      <div className={styles.timelineCardBody}>
+        <div className={styles.timelineCardHeader}>
           {event.fecha_in && (
-            <div className={styles.metaRow}>
-              <Calendar size={14} />
-              <span>{formatDate(event.fecha_in)}</span>
-            </div>
+            <span className={styles.timelineCardTime}>{formatTime(event.fecha_in)}</span>
           )}
-          {event.ubicacion && (
-            <div className={styles.metaRow}>
-              <MapPin size={14} />
-              <span>{event.ubicacion}</span>
-            </div>
+          {event.categoria && (
+            <span className={styles.timelineCardCategory}>{event.categoria}</span>
           )}
         </div>
 
-        <div className={styles.cardFooter}>
-          <div className={styles.footerLeft}>
-            <PlaceholderAvatars />
-            {count > 0 && (
-              <span className={styles.interestCount}>{count}</span>
+        <h3 className={styles.timelineCardTitle}>{event.titulo}</h3>
+
+        {organizer && (
+          <div className={styles.timelineCardRow}>
+            {organizer.foto_url ? (
+              <img src={organizer.foto_url} alt={organizer.nombre} className={styles.timelineOrgAvatar} />
+            ) : (
+              <span
+                className={styles.timelineOrgAvatarFallback}
+                style={{ background: FALLBACK_COLORS[0] }}
+              >
+                {getInitials(organizer.nombre)}
+              </span>
             )}
+            <span className={styles.timelineCardText}>Por {organizer.nombre}</span>
           </div>
+        )}
+
+        {event.ubicacion && (
+          <div className={styles.timelineCardRow}>
+            <MapPin size={14} className={styles.timelineCardIcon} />
+            <span className={styles.timelineCardText}>{event.ubicacion}</span>
+          </div>
+        )}
+
+        <div className={styles.timelineCardFooter}>
+          <InteresadosAvatars
+            interesados={interesados}
+            extraCount={Math.max(0, count - interesados.length)}
+          />
           <button
             className={`${styles.interestBtn} ${liked ? styles.interestBtnActive : ''}`}
             onClick={handleToggle}
@@ -150,6 +212,7 @@ export default function DashboardPage() {
   const [query, setQuery]                   = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [events, setEvents]                 = useState([]);
+  const [organizers, setOrganizers]         = useState({});
   const [loading, setLoading]               = useState(true);
   const [error, setError]                   = useState(null);
   const debounceRef = useRef(null);
@@ -181,10 +244,16 @@ export default function DashboardPage() {
       ? searchEvents({ query: debouncedQuery.trim(), categoria: activeCategory })
       : getActiveEvents({ categoria: activeCategory });
     fetch
-      .then(setEvents)
+      .then((data) => {
+        setEvents(data);
+        const autorIds = (data ?? []).map(ev => ev.autor_id);
+        getUsuariosByIds(autorIds).then(setOrganizers).catch(() => setOrganizers({}));
+      })
       .catch(() => setError('No se pudieron cargar los eventos.'))
       .finally(() => setLoading(false));
   }, [activeCategory, debouncedQuery]);
+
+  const dateGroups = groupEventsByDate(events);
 
   function handleNavClick({ path, categoria }) {
     if (categoria) {
@@ -304,13 +373,39 @@ export default function DashboardPage() {
             </div>
           )}
 
-          {/* Event cards */}
+          {/* Timeline */}
           {!loading && !error && events.length > 0 && (
-            <div className={styles.grid}>
-              {events.map(event => (
-                <EventCard key={event.id} event={event} userId={user?.id} />
-              ))}
-            </div>
+            <>
+              <h2 className={styles.sectionTitle}>Eventos cercanos</h2>
+              <div className={styles.timeline}>
+                {dateGroups.map(group => {
+                  const { dayMonth, weekday } = formatDayLabel(group.date);
+                  return (
+                    <div className={styles.timelineGroup} key={group.key}>
+                      <div className={styles.timelineMarker}>
+                        <span className={styles.timelineDot} />
+                      </div>
+                      <div className={styles.timelineContent}>
+                        <div className={styles.timelineDateLabel}>
+                          <span className={styles.timelineDateDay}>{dayMonth}</span>
+                          <span className={styles.timelineWeekday}>{weekday}</span>
+                        </div>
+                        <div className={styles.timelineCards}>
+                          {group.events.map(event => (
+                            <TimelineEventCard
+                              key={event.id}
+                              event={event}
+                              userId={user?.id}
+                              organizer={organizers[event.autor_id]}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       </main>

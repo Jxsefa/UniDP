@@ -201,119 +201,203 @@
   color: #fff;
 }
 
-/* ─── Cards grid ────────────────────────────────────────── */
-.grid {
+/* ─── Section title ─────────────────────────────────────── */
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+  margin: 0.25rem 0 1.25rem;
+}
+
+/* ─── Timeline ──────────────────────────────────────────── */
+.timeline {
+  display: flex;
+  flex-direction: column;
+}
+
+.timelineGroup {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.25rem;
+  grid-template-columns: 20px 1fr;
+  gap: 1rem;
 }
 
-@media (min-width: 640px) {
-  .grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.timelineMarker {
+  position: relative;
+  display: flex;
+  justify-content: center;
 }
 
-@media (min-width: 1024px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.timelineMarker::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  bottom: -28px;
+  left: 50%;
+  width: 2px;
+  background: var(--color-outline-variant);
+  transform: translateX(-50%);
 }
 
-/* ─── Event card ────────────────────────────────────────── */
-.card {
+.timelineGroup:last-child .timelineMarker::before {
+  display: none;
+}
+
+.timelineDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  margin-top: 6px;
+  flex-shrink: 0;
+  z-index: 1;
+}
+
+.timelineContent {
+  padding-bottom: 1.75rem;
+  min-width: 0;
+}
+
+.timelineDateLabel {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 0.85rem;
+}
+
+.timelineDateDay {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--color-on-surface);
+}
+
+.timelineWeekday {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--color-on-surface-variant);
+  text-transform: capitalize;
+}
+
+.timelineCards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+/* ─── Timeline card ─────────────────────────────────────── */
+.timelineCard {
+  display: flex;
+  gap: 1rem;
   background: #fff;
   border: 1px solid var(--color-outline-variant);
-  border-radius: 12px;
-  overflow: hidden;
+  border-radius: var(--radius-lg);
+  padding: 0.75rem;
   box-shadow: var(--shadow-sm);
   transition: box-shadow 0.2s ease, transform 0.2s ease;
 }
 
-.card:hover {
+.timelineCard:hover {
   box-shadow: 0 8px 28px rgba(0, 0, 0, 0.13);
-  transform: scale(1.02);
+  transform: translateY(-2px);
 }
 
-.cardImageWrap {
-  position: relative;
-}
-
-.cardImage {
-  width: 100%;
-  height: 192px;
+.timelineCardImage,
+.timelineCardImagePlaceholder {
+  width: 96px;
+  height: 96px;
+  border-radius: var(--radius-md);
   object-fit: cover;
-  display: block;
+  flex-shrink: 0;
 }
 
-.cardImagePlaceholder {
-  width: 100%;
-  height: 192px;
+.timelineCardImagePlaceholder {
   background: var(--color-surface-container);
 }
 
-.cardBadge {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  background: rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  color: var(--color-primary);
-  font-size: 0.68rem;
+.timelineCardBody {
+  flex: 1;
+  min-width: 0;
+}
+
+.timelineCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.timelineCardTime {
+  font-size: 0.85rem;
   font-weight: 700;
-  padding: 0.2rem 0.6rem;
+  color: var(--color-primary);
+}
+
+.timelineCardCategory {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-primary);
+  background: var(--color-primary-container);
+  padding: 0.15rem 0.55rem;
   border-radius: var(--radius-full);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
 }
 
-.cardBody {
-  padding: 1.1rem 1.25rem 1.25rem;
-}
-
-.category {
-  display: block;
-  font-size: 0.68rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.07em;
-  color: var(--color-primary);
-  margin-bottom: 0.35rem;
-}
-
-.cardTitle {
+.timelineCardTitle {
   font-size: 1rem;
   font-weight: 700;
   color: var(--color-on-surface);
   line-height: 1.3;
-  margin-bottom: 0.75rem;
+  margin: 0 0 0.5rem;
 }
 
-.cardMeta {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  margin-bottom: 1rem;
-}
-
-.metaRow {
+.timelineCardRow {
   display: flex;
   align-items: center;
-  gap: 0.375rem;
-  font-size: 0.8rem;
-  color: var(--color-on-surface-variant);
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
 }
 
-.metaRow svg {
+.timelineCardText {
+  font-size: 0.8rem;
+  color: var(--color-on-surface-variant);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.timelineCardIcon {
   flex-shrink: 0;
   color: var(--color-on-surface-variant);
 }
 
-.cardFooter {
+.timelineOrgAvatar {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.timelineOrgAvatarFallback {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.timelineCardFooter {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
 /* ─── Stacked avatars ───────────────────────────────────── */
@@ -329,10 +413,29 @@
   border: 2px solid #fff;
   margin-left: -8px;
   flex-shrink: 0;
+  object-fit: cover;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .miniAvatar:first-child {
   margin-left: 0;
+}
+
+.miniAvatarInitials {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.miniAvatarMore {
+  background: #e5e7eb;
+}
+
+.miniAvatarMore .miniAvatarInitials {
+  color: #4b5563;
+  font-size: 9px;
 }
 
 /* ─── Buttons ───────────────────────────────────────────── */
@@ -365,18 +468,6 @@
 .interestBtn:disabled {
   opacity: 0.6;
   cursor: default;
-}
-
-/* ─── Card footer extras ────────────────────────────────── */
-.footerLeft {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.interestCount {
-  font-size: 0.78rem;
-  color: var(--color-on-surface-variant);
 }
 
 /* shared base for create buttons */

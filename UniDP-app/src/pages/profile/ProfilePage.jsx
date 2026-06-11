@@ -62,7 +62,7 @@ function formatDate(iso) {
 }
 
 export default function ProfilePage() {
-  const { user }    = useAuth();
+  const { user, refreshProfile } = useAuth();
   const navigate    = useNavigate();
   const location    = useLocation();
   const fileInputRef = useRef(null);
@@ -79,6 +79,13 @@ export default function ProfilePage() {
   const [editFoto, setEditFoto]       = useState(null);
   const [editPreview, setEditPreview] = useState(null);
   const [saving, setSaving]           = useState(false);
+  const [toast, setToast]             = useState(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const timer = setTimeout(() => setToast(null), 3000);
+    return () => clearTimeout(timer);
+  }, [toast]);
 
   useEffect(() => {
     if (!user) return;
@@ -97,7 +104,7 @@ export default function ProfilePage() {
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-  }, [user]);
+  }, [user?.id]);
 
   function openEdit() {
     setEditBio(profile?.biografia || '');
@@ -125,9 +132,12 @@ export default function ProfilePage() {
       });
       const updated = await getUserProfile(user.id);
       setProfile(updated);
+      refreshProfile();
       setEditOpen(false);
+      setToast({ type: 'success', message: 'Perfil actualizado correctamente' });
     } catch (err) {
       console.error('Error al guardar perfil:', err);
+      setToast({ type: 'error', message: 'No se pudo guardar el perfil' });
     } finally {
       setSaving(false);
     }
@@ -387,6 +397,13 @@ export default function ProfilePage() {
       >
         <Plus size={24} />
       </button>
+
+      {/* ── Toast de confirmación ── */}
+      {toast && (
+        <div className={`${styles.toast} ${toast.type === 'error' ? styles.toastError : styles.toastSuccess}`}>
+          {toast.message}
+        </div>
+      )}
 
       {/* ── Edit modal ── */}
       {editOpen && (

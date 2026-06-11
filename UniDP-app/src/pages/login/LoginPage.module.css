@@ -186,3 +186,136 @@
   height: 20px;
   flex-shrink: 0;
 }
+
+/* ── Saved account ── */
+.savedAccountWrap {
+  position: relative;
+  width: 100%;
+}
+
+.removeAccountBtn {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--color-surface-lowest);
+  border: 1px solid rgba(147, 110, 105, 0.3);
+  color: var(--color-on-surface-variant);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+}
+
+.removeAccountBtn :global(.material-symbols-outlined) {
+  font-size: 16px;
+}
+
+.removeAccountBtn:hover:not(:disabled) {
+  background: var(--color-error-container);
+  color: var(--color-error);
+}
+
+.removeAccountBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.savedAccountBtn {
+  width: 100%;
+  padding: 12px 16px;
+  background: #ffffff;
+  color: var(--color-on-surface);
+  border: 1px solid rgba(147, 110, 105, 0.3);
+  border-radius: var(--radius-md);
+  font-family: var(--font-family);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  transition: box-shadow 0.15s, transform 0.15s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+.savedAccountBtn:hover:not(:disabled) {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+  transform: scale(1.01);
+}
+
+.savedAccountBtn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.savedAccountBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.savedAccountAvatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  object-fit: cover;
+}
+
+.savedAccountIcon {
+  font-size: 36px !important;
+  flex-shrink: 0;
+  color: var(--color-on-surface-variant);
+}
+
+.savedAccountInfo {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.savedAccountName {
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.savedAccountEmail {
+  font-size: 12px;
+  color: var(--color-on-surface-variant);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ── Link buttons ── */
+.linkBtn,
+.linkBtnDanger {
+  width: 100%;
+  background: none;
+  border: none;
+  font-family: var(--font-family);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 4px;
+  text-align: center;
+}
+
+.linkBtn:disabled,
+.linkBtnDanger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.linkBtn {
+  color: var(--color-primary);
+}
+
+.linkBtnDanger {
+  color: var(--color-error);
+}

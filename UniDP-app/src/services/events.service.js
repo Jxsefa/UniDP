@@ -40,7 +40,7 @@ export async function getActiveEvents({ facultad, categoria } = {}) {
     .select('*')
     .eq('estado', 'activo')
     .gt('expires_at', new Date().toISOString())
-    .order('creado_en', { ascending: false })
+    .order('fecha_in', { ascending: true })
     .limit(20);
 
   if (facultad) query = query.eq('facultad', facultad);
@@ -58,7 +58,7 @@ export async function searchEvents({ query, categoria } = {}) {
     .eq('estado', 'activo')
     .gt('expires_at', new Date().toISOString())
     .or(`titulo.ilike.%${query}%,descripcion.ilike.%${query}%`)
-    .order('creado_en', { ascending: false })
+    .order('fecha_in', { ascending: true })
     .limit(20);
 
   if (categoria) q = q.eq('categoria', categoria);
@@ -125,6 +125,29 @@ export async function checkInteres(usuarioId, eventoId) {
     .eq('evento_id', eventoId)
     .maybeSingle();
   return !!data;
+}
+
+export async function getInteresados(eventoId, limit = 3) {
+  const { data: intereses, error } = await supabase
+    .from('intereses')
+    .select('usuario_id')
+    .eq('evento_id', eventoId)
+    .order('creado_en', { ascending: false })
+    .limit(limit);
+  if (error) throw new Error(error.message);
+
+  const userIds = (intereses ?? []).map(i => i.usuario_id).filter(Boolean);
+  if (!userIds.length) return [];
+
+  const { data: usuarios, error: usuariosError } = await supabase
+    .from('usuario')
+    .select('id, nombre, foto_url')
+    .in('id', userIds);
+  if (usuariosError) throw new Error(usuariosError.message);
+
+  // Preserve the most-recent-first order from `intereses`
+  const byId = new Map((usuarios ?? []).map(u => [u.id, u]));
+  return userIds.map(id => byId.get(id)).filter(Boolean);
 }
 
 export async function getInteresCount(eventoId) {
