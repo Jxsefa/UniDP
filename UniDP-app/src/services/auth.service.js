@@ -119,8 +119,7 @@ export async function updateProfile(userId, { nombre, biografia, fotoFile }) {
   if (biografia !== undefined) updates.biografia = biografia;
   if (foto_url) updates.foto_url = foto_url;
 
-  let { error } = await supabase.from('usuario')
-    .upsert({ id: userId, ...updates }, { onConflict: 'id' });
+  let { error } = await supabase.from('usuario').update(updates).eq('id', userId);
   // Retry without biografia if that column doesn't exist yet
   if (error && updates.biografia !== undefined) {
     const { biografia: _b, ...safeUpdates } = updates;
