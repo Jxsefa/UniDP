@@ -4,9 +4,7 @@
   left: 0;
   right: 0;
   height: 60px;
-  background: var(--color-surface-glass);
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--color-surface);
   border-bottom: 1px solid var(--color-outline-variant);
   z-index: 200;
 }
