@@ -158,7 +158,7 @@
 }
 
 .timelineGroup:last-child .timelineMarker::before {
-  display: none;
+  background: linear-gradient(to bottom, var(--color-outline-variant), transparent);
 }
 
 .timelineDot {

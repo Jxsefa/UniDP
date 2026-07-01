@@ -394,21 +394,25 @@ select.input {
 .titleInput {
   width: 100%;
   border: none;
+  border-bottom: 2px solid var(--color-outline-variant);
   background: transparent;
-  padding: 4px 0;
-  font-size: 32px;
+  padding: 4px 0 10px;
+  font-size: 28px;
   font-weight: 800;
   font-family: var(--font-family);
   color: var(--color-on-surface);
   box-sizing: border-box;
+  transition: border-color 0.15s ease;
 }
 
 .titleInput::placeholder {
-  color: var(--color-outline-variant);
+  color: var(--color-on-surface-variant);
+  opacity: 0.6;
 }
 
 .titleInput:focus {
   outline: none;
+  border-bottom-color: var(--color-primary);
 }
 
 /* ── Ubicación ───────────────────────────────────────────────────────────── */

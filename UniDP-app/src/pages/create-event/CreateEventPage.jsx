@@ -47,7 +47,6 @@ export default function CreateEventPage() {
   const [capacidad,      setCapacidad]      = useState('');
 
   // Secciones expandibles
-  const [ubicacionExpanded,   setUbicacionExpanded]   = useState(false);
   const [descripcionExpanded, setDescripcionExpanded] = useState(false);
 
   // Selector de categoría
@@ -97,7 +96,6 @@ export default function CreateEventPage() {
     if (!titulo.trim())      return setError('El título es obligatorio.');
     if (titulo.length > 80)  return setError('El título no puede superar los 80 caracteres.');
     if (!categoria)          return setError('Selecciona una categoría.');
-    if (!descripcion.trim()) return setError('La descripción es obligatoria.');
     if (descripcion.length > 300) return setError('La descripción no puede superar los 300 caracteres.');
     if (!fechaInicio)        return setError('Indica la fecha y hora de inicio.');
     if (!fechaFin)           return setError('Indica la fecha y hora de fin.');
@@ -211,6 +209,7 @@ export default function CreateEventPage() {
 
             {/* Título */}
             <section className={styles.section}>
+              <label className={styles.sectionLabel} htmlFor="titulo">Nombre del evento</label>
               <input
                 id="titulo"
                 type="text"
@@ -306,78 +305,58 @@ export default function CreateEventPage() {
 
             {/* Ubicación */}
             <section className={styles.card}>
-              {!ubicacionExpanded ? (
+              <div className={styles.locationToggle}>
                 <button
                   type="button"
-                  className={styles.expandableRow}
-                  onClick={() => setUbicacionExpanded(true)}
+                  className={`${styles.locationTypeBtn} ${ubicacionTipo === 'campus' ? styles.locationTypeActive : ''}`}
+                  onClick={() => setUbicacionTipo('campus')}
                 >
-                  <span className="material-symbols-outlined">location_on</span>
-                  <div className={styles.expandableText}>
-                    <p className={styles.expandableTitle}>
-                      {ubicacionResumen || 'Agregar ubicación del evento'}
-                    </p>
-                    {!ubicacionResumen && (
-                      <p className={styles.expandableSubtitle}>Ubicación física o enlace virtual</p>
-                    )}
-                  </div>
+                  <span className="material-symbols-outlined">school</span>
+                  Campus UDP
                 </button>
-              ) : (
-                <>
-                  <div className={styles.locationToggle}>
-                    <button
-                      type="button"
-                      className={`${styles.locationTypeBtn} ${ubicacionTipo === 'campus' ? styles.locationTypeActive : ''}`}
-                      onClick={() => setUbicacionTipo('campus')}
-                    >
-                      <span className="material-symbols-outlined">school</span>
-                      Campus UDP
-                    </button>
-                    <button
-                      type="button"
-                      className={`${styles.locationTypeBtn} ${ubicacionTipo === 'externo' ? styles.locationTypeActive : ''}`}
-                      onClick={() => setUbicacionTipo('externo')}
-                    >
-                      <span className="material-symbols-outlined">location_city</span>
-                      Fuera del campus
-                    </button>
-                  </div>
+                <button
+                  type="button"
+                  className={`${styles.locationTypeBtn} ${ubicacionTipo === 'externo' ? styles.locationTypeActive : ''}`}
+                  onClick={() => setUbicacionTipo('externo')}
+                >
+                  <span className="material-symbols-outlined">location_city</span>
+                  Fuera del campus
+                </button>
+              </div>
 
-                  {ubicacionTipo === 'campus' ? (
-                    <>
-                      <select
-                        className={`${styles.input} ${!facultad ? styles.selectEmpty : ''}`}
-                        value={facultad}
-                        onChange={e => setFacultad(e.target.value)}
-                      >
-                        <option value="">Selecciona una facultad...</option>
-                        {FACULTIES.map(f => (
-                          <option key={f.id} value={f.id}>{f.label}</option>
-                        ))}
-                      </select>
-                      <input
-                        type="text"
-                        className={styles.input}
-                        placeholder="Sala, piso u otro detalle (opcional)"
-                        value={detalleUbicacion}
-                        onChange={e => setDetalleUbicacion(e.target.value)}
-                        maxLength={80}
-                      />
-                    </>
-                  ) : (
-                    <div className={styles.inputIcon}>
-                      <span className="material-symbols-outlined">location_on</span>
-                      <input
-                        type="text"
-                        className={styles.inputWithIcon}
-                        placeholder="Dirección completa del evento"
-                        value={direccion}
-                        onChange={e => setDireccion(e.target.value)}
-                        maxLength={120}
-                      />
-                    </div>
-                  )}
+              {ubicacionTipo === 'campus' ? (
+                <>
+                  <select
+                    className={`${styles.input} ${!facultad ? styles.selectEmpty : ''}`}
+                    value={facultad}
+                    onChange={e => setFacultad(e.target.value)}
+                  >
+                    <option value="">Selecciona una facultad...</option>
+                    {FACULTIES.map(f => (
+                      <option key={f.id} value={f.id}>{f.label}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Sala, piso u otro detalle (opcional)"
+                    value={detalleUbicacion}
+                    onChange={e => setDetalleUbicacion(e.target.value)}
+                    maxLength={80}
+                  />
                 </>
+              ) : (
+                <div className={styles.inputIcon}>
+                  <span className="material-symbols-outlined">location_on</span>
+                  <input
+                    type="text"
+                    className={styles.inputWithIcon}
+                    placeholder="Dirección completa del evento"
+                    value={direccion}
+                    onChange={e => setDireccion(e.target.value)}
+                    maxLength={120}
+                  />
+                </div>
               )}
             </section>
 
