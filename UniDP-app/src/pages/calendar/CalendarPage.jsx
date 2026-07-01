@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import {
-  Calendar, ChevronLeft, ChevronRight, Clock, MapPin,
+  Calendar, CalendarPlus, ChevronLeft, ChevronRight, Clock, MapPin,
 } from 'lucide-react';
 import { getEventosMeInteresa, toggleInteres } from '../../services/events.service';
+import { buildGoogleCalendarUrl } from '../../utils/eventFormat';
 import Spinner from '../../components/ui/Spinner';
 import AppShell from '../../components/layout/AppShell';
 import styles from './CalendarPage.module.css';
@@ -249,13 +250,26 @@ export default function CalendarPage() {
                               </span>
                             )}
                           </div>
-                          <button
-                            className={styles.removeBtn}
-                            onClick={() => handleRemove(ev.id)}
-                            type="button"
-                          >
-                            Quitar
-                          </button>
+                          <div className={styles.cardActions}>
+                            {ev.fecha_in && (
+                              <a
+                                className={styles.gcalBtn}
+                                href={buildGoogleCalendarUrl(ev)}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <CalendarPlus size={13} />
+                                Google Calendar
+                              </a>
+                            )}
+                            <button
+                              className={styles.removeBtn}
+                              onClick={() => handleRemove(ev.id)}
+                              type="button"
+                            >
+                              Quitar
+                            </button>
+                          </div>
                         </div>
 
                         {/* Thumbnail */}

@@ -37,3 +37,23 @@ export function getInitials(nombre) {
   }
   return (nombre || '').slice(0, 2).toUpperCase();
 }
+
+function toGCalDate(date) {
+  return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+}
+
+export function buildGoogleCalendarUrl(event) {
+  if (!event.fecha_in) return null;
+  const start = new Date(event.fecha_in);
+  const end = event.fecha_fin ? new Date(event.fecha_fin) : new Date(start.getTime() + 60 * 60 * 1000);
+
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: event.titulo || '',
+    dates: `${toGCalDate(start)}/${toGCalDate(end)}`,
+    details: event.descripcion || '',
+    location: event.ubicacion || '',
+  });
+
+  return `https://calendar.google.com/calendar/render?${params.toString()}`;
+}

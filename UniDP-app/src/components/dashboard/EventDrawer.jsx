@@ -1,12 +1,12 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, MapPin, Users as UsersIcon, Trash2, Flag } from 'lucide-react';
+import { X, MapPin, Users as UsersIcon, Trash2, Flag, CalendarPlus } from 'lucide-react';
 import { useInteres } from '../../hooks/useInteres';
 import { deleteEvent } from '../../services/events.service';
 import { createReporte } from '../../services/reportes.service';
 import { REPORT_MOTIVOS } from '../../constants/reportMotivos';
 import {
-  FALLBACK_COLORS, formatDateBadge, formatWeekdayDate, formatTimeRange, getInitials,
+  FALLBACK_COLORS, formatDateBadge, formatWeekdayDate, formatTimeRange, getInitials, buildGoogleCalendarUrl,
 } from '../../utils/eventFormat';
 import InteresadosAvatars from './InteresadosAvatars';
 import styles from './EventDrawer.module.css';
@@ -162,6 +162,18 @@ export default function EventDrawer({ event, organizer, userId, isAdmin, onClose
                 </div>
                 <span className={styles.rowText}>{event.ubicacion}</span>
               </div>
+            )}
+
+            {event.fecha_in && (
+              <a
+                className={styles.gcalLink}
+                href={buildGoogleCalendarUrl(event)}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <CalendarPlus size={16} />
+                Agregar a Google Calendar
+              </a>
             )}
 
             {cupos != null && (

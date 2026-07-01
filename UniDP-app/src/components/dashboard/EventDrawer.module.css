@@ -335,6 +335,21 @@
   margin-left: auto;
 }
 
+.gcalLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-decoration: none;
+}
+
+.gcalLink:hover {
+  text-decoration: underline;
+}
+
 .section {
   margin-top: 0.5rem;
   margin-bottom: 1rem;
