@@ -78,6 +78,21 @@ export async function getEventById(id) {
   return data;
 }
 
+export async function getEventosByIds(eventoIds) {
+  const uniqueIds = [...new Set(eventoIds)].filter(Boolean);
+  if (!uniqueIds.length) return {};
+
+  const { data, error } = await supabase
+    .from('evento')
+    .select('id, titulo, categoria, autor_id, imagen_url')
+    .in('id', uniqueIds);
+  if (error) throw new Error(error.message);
+
+  const byId = {};
+  (data ?? []).forEach((e) => { byId[e.id] = e; });
+  return byId;
+}
+
 export async function getEventosByAutor(autorId) {
   const { data, error } = await supabase
     .from('evento').select('*')

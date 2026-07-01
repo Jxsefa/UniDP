@@ -1,7 +1,8 @@
 import { useNavigate } from 'react-router-dom';
-import { Bell, LogOut, Sun, Moon } from 'lucide-react';
+import { LogOut, Sun, Moon, ShieldAlert, GraduationCap } from 'lucide-react';
 import { useAuth } from '../../hooks/useAuth';
 import { useTheme } from '../../hooks/useTheme';
+import NotificationBell from './NotificationBell';
 import styles from './Navbar.module.css';
 
 function getInitials(user) {
@@ -35,6 +36,7 @@ export default function Navbar() {
           aria-label="Ir al inicio"
           type="button"
         >
+          <GraduationCap size={30} />
           UniDP
         </button>
 
@@ -48,9 +50,18 @@ export default function Navbar() {
             {theme === 'dark' ? <Sun size={20} /> : <Moon size={20} />}
           </button>
 
-          <button className={styles.iconBtn} aria-label="Notificaciones" type="button">
-            <Bell size={20} />
-          </button>
+          {profile?.role === 'admin' && (
+            <button
+              className={styles.iconBtn}
+              aria-label="Panel de denuncias"
+              onClick={() => navigate('/admin/reportes')}
+              type="button"
+            >
+              <ShieldAlert size={20} />
+            </button>
+          )}
+
+          <NotificationBell />
 
           <button
             className={styles.iconBtn}

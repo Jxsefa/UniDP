@@ -21,6 +21,11 @@ const CalendarPage  = lazy(() => import('../pages/calendar/CalendarPage'));
 const ProfilePage   = lazy(() => import('../pages/profile/ProfilePage'));
 const EditEventPage = lazy(() => import('../pages/edit-event/EditEventPage'));
 const UserProfilePage = lazy(() => import('../pages/user-profile/UserProfilePage'));
+const AdminReportsPage = lazy(() => import('../pages/admin-reports/AdminReportsPage'));
+const NotificationsPage = lazy(() => import('../pages/notifications/NotificationsPage'));
+const DesignPreviewPage = import.meta.env.DEV
+  ? lazy(() => import('../pages/design-preview/DesignPreviewPage'))
+  : null;
 
 export default function AppRouter() {
   return (
@@ -90,6 +95,28 @@ export default function AppRouter() {
             </ProtectedRoute>
           }
         />
+
+        <Route
+          path="/notificaciones"
+          element={
+            <ProtectedRoute>
+              <NotificationsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/admin/reportes"
+          element={
+            <ProtectedRoute requireAdmin>
+              <AdminReportsPage />
+            </ProtectedRoute>
+          }
+        />
+
+        {import.meta.env.DEV && (
+          <Route path="/design-preview" element={<DesignPreviewPage />} />
+        )}
 
         <Route path="*" element={<Navigate to="/login" replace />} />
       </Routes>

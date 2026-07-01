@@ -1,7 +1,12 @@
+import { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Plus } from 'lucide-react';
 import { SIDEBAR_NAV_ITEMS, BOTTOM_NAV_ITEMS } from '../../constants/navigation';
+import { useAuth } from '../../hooks/useAuth';
+import { getUnreadCount } from '../../services/notificaciones.service';
 import styles from './AppShell.module.css';
+
+const POLL_INTERVAL_MS = 45000;
 
 /**
  * Shared shell for the main protected pages: desktop sidebar, mobile bottom nav and FAB.
@@ -10,8 +15,20 @@ import styles from './AppShell.module.css';
 export default function AppShell({ children, activeCategory = null, sidebarItems = SIDEBAR_NAV_ITEMS }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const { user } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    if (!user) return;
+    getUnreadCount(user.id).then(setUnreadCount).catch(console.error);
+    const timer = setInterval(() => {
+      getUnreadCount(user.id).then(setUnreadCount).catch(console.error);
+    }, POLL_INTERVAL_MS);
+    return () => clearInterval(timer);
+  }, [user]);
 
   function handleNavClick({ path, categoria }) {
+    if (!path) return;
     if (categoria) {
       navigate(path, { state: { categoria } });
     } else {
@@ -20,7 +37,7 @@ export default function AppShell({ children, activeCategory = null, sidebarItems
   }
 
   function isNavActive({ path, categoria }) {
-    if (location.pathname !== path) return false;
+    if (!path || location.pathname !== path) return false;
     if (path === '/dashboard') return (categoria ?? null) === activeCategory;
     return true;
   }
@@ -75,7 +92,12 @@ export default function AppShell({ children, activeCategory = null, sidebarItems
             onClick={() => handleNavClick(item)}
             type="button"
           >
-            <item.Icon size={22} />
+            <span className={styles.bottomNavIconWrap}>
+              <item.Icon size={22} />
+              {item.showUnreadBadge && unreadCount > 0 && (
+                <span className={styles.bottomNavBadge}>{unreadCount > 9 ? '9+' : unreadCount}</span>
+              )}
+            </span>
             <span>{item.label}</span>
           </button>
         ))}

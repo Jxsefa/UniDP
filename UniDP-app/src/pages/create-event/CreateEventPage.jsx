@@ -429,9 +429,9 @@ export default function CreateEventPage() {
                       placeholder="—"
                       value={capacidad}
                       min={1}
-                      max={9999}
+                      max={99999}
                       autoFocus
-                      onChange={e => setCapacidad(e.target.value)}
+                      onChange={e => setCapacidad(e.target.value.replace(/\D/g, '').slice(0, 5))}
                     />
                     <button
                       type="button"

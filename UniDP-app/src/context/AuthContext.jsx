@@ -29,11 +29,13 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(true);
   const [authError, setAuthError] = useState(null);
   const userIdRef = useRef(null);
 
   function loadProfile(userId) {
-    getUserProfile(userId).then(setProfile).catch(console.error);
+    setProfileLoading(true);
+    getUserProfile(userId).then(setProfile).catch(console.error).finally(() => setProfileLoading(false));
   }
 
   useEffect(() => {
@@ -100,7 +102,7 @@ export function AuthProvider({ children }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, loginWithGoogle, logout, refreshProfile }}>
+    <AuthContext.Provider value={{ user, profile, loading, profileLoading, authError, loginWithGoogle, logout, refreshProfile }}>
       {children}
     </AuthContext.Provider>
   );
